@@ -1,16 +1,15 @@
-# pruebasmiayudatic
+﻿# Pruebas MiAyudaTIC
 
-A new Flutter project.
+Proceso de desarrollo de un sistema gestor de solicitudes
+de soporte.
 
-## Getting Started
+##  Proyecto Final de Curso - Tecnologías
 
-This project is a starting point for a Flutter application.
+ - Este proyecto usa **Flutter** como tecnología principal de desarrollo
+ - Se integra con **php** para el manejo de las solicitudes y lógica del
+ programa
+ - Utiliza ***php my admin*** para administrar la base de datos creada en MySQL
+##  Funcionalidades
 
-A few resources to get you started if this is your first Flutter project:
+- Muchas
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
