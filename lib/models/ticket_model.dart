@@ -31,16 +31,16 @@ class Ticket {
 
   factory Ticket.fromJson(Map<String, dynamic> json) {
     return Ticket(
-      id: json['id'],
+      id: int.tryParse(json['id_solicitud']?.toString() ?? ''),
       fechaReporte: DateTime.parse(json['fecha_reporte']),
       nombresSolicitante: json['nombres_solicitante'],
       apellidosSolicitante: json['apellidos_solicitante'],
       correoSolicitante: json['correo_institucional_solicitante'],
       numeroContacto: json['numero_contacto_solicitante'],
       descripcion: json['descripcion_solicitud'],
-      dependencia: json['nombre_dependencia'],
-      estado: json['estado'],
-      tipoServicio: json['tipo_servicio'],
+      dependencia: json['nombre_dependencia'] ?? json['dependencia'],
+      estado: json['nombre_estado'] ?? json['estado'],
+      tipoServicio: json['nombre_tipo_servicio'] ?? json['tipo_servicio'],
       personalAsignado: json['personal_asignado'],
       fechaCreacion: json['fecha_creacion_registro'] != null 
         ? DateTime.parse(json['fecha_creacion_registro'])
@@ -59,15 +59,15 @@ class Ticket {
       'correo_institucional_solicitante': correoSolicitante,
       'numero_contacto_solicitante': numeroContacto,
       'descripcion_solicitud': descripcion,
-      'dependencia': dependencia,
+      'id_dependencia': int.parse(dependencia),
     };
   }
 
   Map<String, dynamic> toUpdateJson() {
     final Map<String, dynamic> data = {};
-    if (estado != null) data['estado'] = estado;
-    if (tipoServicio != null) data['tipo_servicio'] = tipoServicio;
-    if (personalAsignado != null) data['personal_asignado'] = personalAsignado;
+    if (estado != null) data['id_estado'] = int.parse(estado!);
+    if (tipoServicio != null) data['id_tipo_servicio'] = int.parse(tipoServicio!);
+    if (personalAsignado != null) data['id_personal_ti_asignado'] = int.parse(personalAsignado!);
     if (fechaCierre != null) data['fecha_cierre'] = fechaCierre!.toIso8601String();
     return data;
   }

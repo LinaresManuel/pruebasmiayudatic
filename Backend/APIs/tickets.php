@@ -12,7 +12,7 @@ function getTickets() {
                  LEFT JOIN tic_tipos_servicio ts ON t.id_tipo_servicio = ts.id_tipo_servicio
                  LEFT JOIN tic_estados_solicitud es ON t.id_estado = es.id_estado
                  LEFT JOIN tic_usuarios u ON t.id_personal_ti_asignado = u.id_usuario
-                 ORDER BY t.fecha_reporte DESC";
+                 ORDER BY t.fecha_creacion_registro ASC";
         
         $stmt = $conn->query($query);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -31,21 +31,43 @@ function createTicket($data) {
     try {
         writeLog("Intentando crear ticket con datos: " . json_encode($data), "tickets");
         
+        // Validar que todos los campos requeridos estén presentes
+        $requiredFields = [
+            'fecha_reporte',
+            'nombres_solicitante',
+            'apellidos_solicitante',
+            'correo_institucional_solicitante',
+            'numero_contacto_solicitante',
+            'descripcion_solicitud',
+            'id_dependencia'
+        ];
+        
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field])) {
+                writeLog("Error: Campo requerido faltante: $field", "tickets");
+                http_response_code(400);
+                return ['error' => "Campo requerido faltante: $field"];
+            }
+        }
+        
         $stmt = $conn->prepare("INSERT INTO tic_solicitudes (
             fecha_reporte, nombres_solicitante, apellidos_solicitante,
             correo_institucional_solicitante, numero_contacto_solicitante,
             descripcion_solicitud, id_dependencia, id_estado
         ) VALUES (?, ?, ?, ?, ?, ?, ?, 1)"); // 1 = Estado 'Abierta'
 
-        $stmt->execute([
+        $params = [
             $data['fecha_reporte'],
             $data['nombres_solicitante'],
             $data['apellidos_solicitante'],
             $data['correo_institucional_solicitante'],
             $data['numero_contacto_solicitante'],
             $data['descripcion_solicitud'],
-            $data['dependencia']
-        ]);
+            $data['id_dependencia']
+        ];
+        
+        writeLog("Ejecutando consulta con parámetros: " . json_encode($params), "tickets");
+        $stmt->execute($params);
 
         $ticketId = $conn->lastInsertId();
         writeLog("Ticket creado exitosamente con ID: " . $ticketId, "tickets");
@@ -113,7 +135,10 @@ switch($method) {
         break;
         
     case 'POST':
-        $data = json_decode(file_get_contents('php://input'), true);
+        $jsonInput = file_get_contents('php://input');
+        $data = json_decode($jsonInput, true);
+        writeLog("Datos recibidos en POST: " . $jsonInput, "tickets");
+        
         if ($data) {
             echo json_encode(createTicket($data));
         } else {
@@ -139,4 +164,4 @@ switch($method) {
         http_response_code(405);
         echo json_encode(['error' => 'Method not allowed']);
 }
-?> 
+?>

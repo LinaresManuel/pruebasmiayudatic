@@ -95,7 +95,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
       final details = await _apiService.getTicketDetails(ticket.id!);
       if (!mounted) return;
 
-      showDialog(
+      await showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Detalles de la Solicitud'),
@@ -104,13 +104,19 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                _detailRow('ID', details.id.toString()),
+                _detailRow('Fecha de Reporte', DateFormat('dd/MM/yyyy').format(details.fechaReporte)),
                 _detailRow('Solicitante', '${details.nombresSolicitante} ${details.apellidosSolicitante}'),
                 _detailRow('Correo', details.correoSolicitante),
-                _detailRow('Dependencia', details.dependencia),
                 _detailRow('Contacto', details.numeroContacto),
+                _detailRow('Dependencia', details.dependencia),
                 _detailRow('Estado', details.estado ?? 'No asignado'),
-                _detailRow('Tipo', details.tipoServicio ?? 'No asignado'),
-                _detailRow('Asignado a', details.personalAsignado ?? 'No asignado'),
+                _detailRow('Tipo de Servicio', details.tipoServicio ?? 'No asignado'),
+                _detailRow('Personal Asignado', details.personalAsignado ?? 'No asignado'),
+                if (details.fechaCreacion != null)
+                  _detailRow('Fecha de Creación', DateFormat('dd/MM/yyyy HH:mm').format(details.fechaCreacion!)),
+                if (details.fechaCierre != null)
+                  _detailRow('Fecha de Cierre', DateFormat('dd/MM/yyyy HH:mm').format(details.fechaCierre!)),
                 const Divider(),
                 const Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
@@ -127,6 +133,8 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
         ),
       );
     } catch (e) {
+      if (!mounted) return;
+      print('Error al cargar detalles: $e'); // Debug log
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al cargar los detalles: $e'),
@@ -138,14 +146,13 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
 
   Future<void> _closeTicket(Ticket ticket) async {
     try {
-      await _apiService.updateTicket(
-        ticket.id!,
-        {
-          'estado': 'Cerrada',
-          'fecha_cierre': DateTime.now().toIso8601String(),
-        },
-      );
+      final updates = {
+        'id_estado': 3, // ID del estado 'Cerrada'
+        'fecha_cierre': DateTime.now().toIso8601String(),
+      };
 
+      print('Cerrando ticket: ${ticket.id} con datos: $updates'); // Debug log
+      await _apiService.updateTicket(ticket.id!, updates);
       await _loadTickets();
 
       if (!mounted) return;
@@ -157,6 +164,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      print('Error en _closeTicket: $e'); // Debug log
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al cerrar la solicitud: $e'),
@@ -166,20 +174,43 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
     }
   }
 
-  Future<void> _assignTicket(Ticket ticket, String? serviceType, String? staffId) async {
-    if (serviceType == null && staffId == null) return;
+  Future<void> _assignTicket(Ticket ticket, String? serviceType, String? staffName) async {
+    if (serviceType == null && staffName == null) return;
 
     try {
       final updates = <String, dynamic>{};
+      
       if (serviceType != null) {
-        updates['tipo_servicio'] = serviceType;
+        // Buscar el ID del tipo de servicio por nombre
+        final serviceTypeData = _serviceTypes.firstWhere(
+          (type) => type['nombre_tipo_servicio'] == serviceType,
+          orElse: () => throw Exception('Tipo de servicio no encontrado'),
+        );
+        updates['id_tipo_servicio'] = int.parse(serviceTypeData['id_tipo_servicio'].toString());
+        
+        // Actualizar el estado a "En Proceso" si no está cerrado
+        if (ticket.estado != 'Cerrada') {
+          updates['id_estado'] = 2; // 2 = En Proceso
+        }
       }
-      if (staffId != null) {
-        updates['personal_asignado'] = staffId;
+      
+      if (staffName != null) {
+        // Buscar el ID del personal por nombre completo
+        final staffData = _supportStaff.firstWhere(
+          (staff) => staff['nombre_completo'] == staffName,
+          orElse: () => throw Exception('Personal no encontrado'),
+        );
+        updates['id_personal_ti_asignado'] = int.parse(staffData['id_usuario'].toString());
+        
+        // Actualizar el estado a "En Proceso" si no está cerrado
+        if (ticket.estado != 'Cerrada') {
+          updates['id_estado'] = 2; // 2 = En Proceso
+        }
       }
 
+      print('Enviando actualización: $updates'); // Debug log
       await _apiService.updateTicket(ticket.id!, updates);
-      await _loadTickets();
+      await _loadTickets(); // Recargar la lista de tickets
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -190,6 +221,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      print('Error en _assignTicket: $e'); // Debug log
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al actualizar la solicitud: $e'),
@@ -209,7 +241,9 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
             '$label: ',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          Expanded(child: Text(value)),
+          Expanded(
+            child: Text(value),
+          ),
         ],
       ),
     );
@@ -339,11 +373,11 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                         _loadingMasterData
                                             ? const CircularProgressIndicator()
                                             : DropdownButton<String>(
-                                                value: ticket.tipoServicio,
+                                                value: ticket.tipoServicio != null ? ticket.tipoServicio : null,
                                                 hint: const Text('Seleccionar'),
                                                 items: _serviceTypes.map((type) {
                                                   return DropdownMenuItem<String>(
-                                                    value: type['id_tipo_servicio'].toString(),
+                                                    value: type['nombre_tipo_servicio'],
                                                     child: Text(type['nombre_tipo_servicio']),
                                                   );
                                                 }).toList(),
@@ -358,11 +392,11 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                         _loadingMasterData
                                             ? const CircularProgressIndicator()
                                             : DropdownButton<String>(
-                                                value: ticket.personalAsignado,
+                                                value: ticket.personalAsignado != null ? ticket.personalAsignado : null,
                                                 hint: const Text('Asignar'),
                                                 items: _supportStaff.map((staff) {
                                                   return DropdownMenuItem<String>(
-                                                    value: staff['id_usuario'].toString(),
+                                                    value: staff['nombre_completo'],
                                                     child: Text(staff['nombre_completo']),
                                                   );
                                                 }).toList(),
