@@ -1,197 +1,142 @@
 <?php
-require_once 'config.php';
+require_once 'common.php';
 
-// Get all tickets
+// Función para obtener todos los tickets
 function getTickets() {
     global $conn;
     try {
-        $stmt = $conn->query("SELECT 
-            s.id_solicitud as id,
-            s.fecha_reporte,
-            s.nombres_solicitante,
-            s.apellidos_solicitante,
-            s.correo_institucional_solicitante,
-            s.numero_contacto_solicitante,
-            s.descripcion_solicitud,
-            d.nombre_dependencia,
-            e.nombre_estado as estado,
-            ts.nombre_tipo_servicio as tipo_servicio,
-            CONCAT(u.nombre, ' ', u.apellido) as personal_asignado,
-            s.fecha_creacion_registro,
-            s.fecha_cierre
-        FROM tic_solicitudes s
-        LEFT JOIN tic_dependencias d ON s.id_dependencia = d.id_dependencia
-        LEFT JOIN tic_estados_solicitud e ON s.id_estado = e.id_estado
-        LEFT JOIN tic_tipos_servicio ts ON s.id_tipo_servicio = ts.id_tipo_servicio
-        LEFT JOIN tic_usuarios u ON s.id_personal_ti_asignado = u.id_usuario
-        ORDER BY s.fecha_creacion_registro DESC");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $query = "SELECT t.*, d.nombre_dependencia, ts.nombre_tipo_servicio, es.nombre_estado,
+                        CONCAT(u.nombre, ' ', u.apellido) as personal_asignado
+                 FROM tic_solicitudes t
+                 LEFT JOIN tic_dependencias d ON t.id_dependencia = d.id_dependencia
+                 LEFT JOIN tic_tipos_servicio ts ON t.id_tipo_servicio = ts.id_tipo_servicio
+                 LEFT JOIN tic_estados_solicitud es ON t.id_estado = es.id_estado
+                 LEFT JOIN tic_usuarios u ON t.id_personal_ti_asignado = u.id_usuario
+                 ORDER BY t.fecha_reporte DESC";
+        
+        $stmt = $conn->query($query);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        writeLog("Obteniendo tickets: " . count($result) . " registros encontrados", "tickets");
+        return $result;
     } catch(PDOException $e) {
+        writeLog("Error al obtener tickets: " . $e->getMessage(), "tickets");
+        http_response_code(500);
         return ['error' => $e->getMessage()];
     }
 }
 
-// Create new ticket
+// Función para crear un nuevo ticket
 function createTicket($data) {
     global $conn;
     try {
-        // First get the dependencia ID
-        $stmtDep = $conn->prepare("SELECT id_dependencia FROM tic_dependencias WHERE nombre_dependencia = ?");
-        $stmtDep->execute([$data['dependencia']]);
-        $depId = $stmtDep->fetchColumn();
+        writeLog("Intentando crear ticket con datos: " . json_encode($data), "tickets");
         
-        if (!$depId) {
-            return ['error' => 'Dependencia no válida'];
-        }
-
-        // Get the estado ID for 'Abierta'
-        $stmtEstado = $conn->prepare("SELECT id_estado FROM tic_estados_solicitud WHERE nombre_estado = 'Abierta'");
-        $stmtEstado->execute();
-        $estadoId = $stmtEstado->fetchColumn();
-
         $stmt = $conn->prepare("INSERT INTO tic_solicitudes (
-            fecha_reporte,
-            nombres_solicitante,
-            apellidos_solicitante,
-            correo_institucional_solicitante,
-            numero_contacto_solicitante,
-            descripcion_solicitud,
-            id_dependencia,
-            id_estado
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        
+            fecha_reporte, nombres_solicitante, apellidos_solicitante,
+            correo_institucional_solicitante, numero_contacto_solicitante,
+            descripcion_solicitud, id_dependencia, id_estado
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1)"); // 1 = Estado 'Abierta'
+
         $stmt->execute([
             $data['fecha_reporte'],
-            $data['nombres'],
-            $data['apellidos'],
-            $data['correo'],
-            $data['numero_contacto'],
-            $data['descripcion'],
-            $depId,
-            $estadoId
+            $data['nombres_solicitante'],
+            $data['apellidos_solicitante'],
+            $data['correo_institucional_solicitante'],
+            $data['numero_contacto_solicitante'],
+            $data['descripcion_solicitud'],
+            $data['dependencia']
         ]);
-        
-        return ['success' => true, 'id' => $conn->lastInsertId()];
+
+        $ticketId = $conn->lastInsertId();
+        writeLog("Ticket creado exitosamente con ID: " . $ticketId, "tickets");
+        return ['success' => true, 'message' => 'Ticket created successfully', 'ticket_id' => $ticketId];
     } catch(PDOException $e) {
+        writeLog("Error al crear ticket: " . $e->getMessage(), "tickets");
+        http_response_code(500);
         return ['error' => $e->getMessage()];
     }
 }
 
-// Update ticket
-function updateTicket($id, $data) {
+// Función para actualizar un ticket
+function updateTicket($ticketId, $data) {
     global $conn;
     try {
+        writeLog("Intentando actualizar ticket ID: " . $ticketId . " con datos: " . json_encode($data), "tickets");
+        
         $updateFields = [];
         $params = [];
         
-        if (isset($data['estado'])) {
-            $stmtEstado = $conn->prepare("SELECT id_estado FROM tic_estados_solicitud WHERE nombre_estado = ?");
-            $stmtEstado->execute([$data['estado']]);
-            $estadoId = $stmtEstado->fetchColumn();
-            if ($estadoId) {
-                $updateFields[] = "id_estado = ?";
-                $params[] = $estadoId;
-            }
+        if (isset($data['id_estado'])) {
+            $updateFields[] = "id_estado = ?";
+            $params[] = $data['id_estado'];
         }
-
-        if (isset($data['tipo_servicio'])) {
-            $stmtTipo = $conn->prepare("SELECT id_tipo_servicio FROM tic_tipos_servicio WHERE nombre_tipo_servicio = ?");
-            $stmtTipo->execute([$data['tipo_servicio']]);
-            $tipoId = $stmtTipo->fetchColumn();
-            if ($tipoId) {
-                $updateFields[] = "id_tipo_servicio = ?";
-                $params[] = $tipoId;
-            }
+        if (isset($data['id_tipo_servicio'])) {
+            $updateFields[] = "id_tipo_servicio = ?";
+            $params[] = $data['id_tipo_servicio'];
         }
-
-        if (isset($data['personal_asignado'])) {
+        if (isset($data['id_personal_ti_asignado'])) {
             $updateFields[] = "id_personal_ti_asignado = ?";
-            $params[] = $data['personal_asignado'];
+            $params[] = $data['id_personal_ti_asignado'];
+        }
+        if (isset($data['fecha_cierre']) && $data['id_estado'] == 3) { // 3 = Cerrada
+            $updateFields[] = "fecha_cierre = CURRENT_TIMESTAMP";
         }
 
-        if (isset($data['fecha_cierre'])) {
-            $updateFields[] = "fecha_cierre = ?";
-            $params[] = $data['fecha_cierre'];
-        }
-        
         if (empty($updateFields)) {
-            return ['error' => 'No hay campos para actualizar'];
+            writeLog("No hay campos para actualizar en el ticket ID: " . $ticketId, "tickets");
+            http_response_code(400);
+            return ['error' => 'No fields to update'];
         }
 
-        $params[] = $id;
-        $updateQuery = "UPDATE tic_solicitudes SET " . implode(', ', $updateFields) . " WHERE id_solicitud = ?";
-        
-        $stmt = $conn->prepare($updateQuery);
+        $query = "UPDATE tic_solicitudes SET " . implode(", ", $updateFields) . " WHERE id_solicitud = ?";
+        $params[] = $ticketId;
+
+        $stmt = $conn->prepare($query);
         $stmt->execute($params);
-        
-        return ['success' => true];
+
+        writeLog("Ticket ID: " . $ticketId . " actualizado exitosamente", "tickets");
+        return ['success' => true, 'message' => 'Ticket updated successfully'];
     } catch(PDOException $e) {
+        writeLog("Error al actualizar ticket ID: " . $ticketId . ": " . $e->getMessage(), "tickets");
+        http_response_code(500);
         return ['error' => $e->getMessage()];
     }
 }
 
-// Get ticket details
-function getTicketDetails($id) {
-    global $conn;
-    try {
-        $stmt = $conn->prepare("SELECT 
-            s.id_solicitud as id,
-            s.fecha_reporte,
-            s.nombres_solicitante,
-            s.apellidos_solicitante,
-            s.correo_institucional_solicitante,
-            s.numero_contacto_solicitante,
-            s.descripcion_solicitud,
-            d.nombre_dependencia,
-            e.nombre_estado as estado,
-            ts.nombre_tipo_servicio as tipo_servicio,
-            CONCAT(u.nombre, ' ', u.apellido) as personal_asignado,
-            s.fecha_creacion_registro,
-            s.fecha_cierre
-        FROM tic_solicitudes s
-        LEFT JOIN tic_dependencias d ON s.id_dependencia = d.id_dependencia
-        LEFT JOIN tic_estados_solicitud e ON s.id_estado = e.id_estado
-        LEFT JOIN tic_tipos_servicio ts ON s.id_tipo_servicio = ts.id_tipo_servicio
-        LEFT JOIN tic_usuarios u ON s.id_personal_ti_asignado = u.id_usuario
-        WHERE s.id_solicitud = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    } catch(PDOException $e) {
-        return ['error' => $e->getMessage()];
-    }
-}
-
-// Handle requests
+// Procesar la solicitud
 $method = $_SERVER['REQUEST_METHOD'];
-$response = [];
+writeLog("Método de solicitud recibido: " . $method, "tickets");
 
-switch ($method) {
+switch($method) {
     case 'GET':
-        if (isset($_GET['id'])) {
-            $response = getTicketDetails($_GET['id']);
-        } else {
-            $response = getTickets();
-        }
+        echo json_encode(getTickets());
         break;
         
     case 'POST':
         $data = json_decode(file_get_contents('php://input'), true);
-        $response = createTicket($data);
+        if ($data) {
+            echo json_encode(createTicket($data));
+        } else {
+            writeLog("Error: Datos inválidos recibidos en POST", "tickets");
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid data']);
+        }
         break;
         
     case 'PUT':
         $data = json_decode(file_get_contents('php://input'), true);
-        if (isset($data['id'])) {
-            $id = $data['id'];
-            $response = updateTicket($id, $data);
+        if (isset($_GET['id']) && $data) {
+            echo json_encode(updateTicket($_GET['id'], $data));
         } else {
-            $response = ['error' => 'Ticket ID is required'];
+            writeLog("Error: ID de ticket no proporcionado o datos inválidos en PUT", "tickets");
+            http_response_code(400);
+            echo json_encode(['error' => 'Ticket ID and update data required']);
         }
         break;
         
     default:
-        $response = ['error' => 'Invalid request method'];
+        writeLog("Método no soportado: " . $method, "tickets");
+        http_response_code(405);
+        echo json_encode(['error' => 'Method not allowed']);
 }
-
-echo json_encode($response);
 ?> 

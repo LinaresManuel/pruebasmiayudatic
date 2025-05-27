@@ -54,11 +54,11 @@ class Ticket {
   Map<String, dynamic> toJson() {
     return {
       'fecha_reporte': fechaReporte.toIso8601String().split('T')[0],
-      'nombres': nombresSolicitante,
-      'apellidos': apellidosSolicitante,
-      'correo': correoSolicitante,
-      'numero_contacto': numeroContacto,
-      'descripcion': descripcion,
+      'nombres_solicitante': nombresSolicitante,
+      'apellidos_solicitante': apellidosSolicitante,
+      'correo_institucional_solicitante': correoSolicitante,
+      'numero_contacto_solicitante': numeroContacto,
+      'descripcion_solicitud': descripcion,
       'dependencia': dependencia,
     };
   }

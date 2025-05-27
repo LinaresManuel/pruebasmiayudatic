@@ -1,127 +1,211 @@
 <?php
-require_once 'config.php';
+require_once 'common.php';
 
-// Get all staff members
+// Función para obtener todo el personal de soporte
 function getAllStaff() {
     global $conn;
     try {
-        $stmt = $conn->query("SELECT 
-            u.id_usuario as id,
-            CONCAT(u.nombre, ' ', u.apellido) as nombre_completo,
-            u.cedula,
-            r.nombre_rol as rol,
-            u.correo_electronico as username
-        FROM tic_usuarios u
-        JOIN tic_roles r ON u.id_rol = r.id_rol");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $query = "SELECT u.id_usuario, u.nombre, u.apellido, u.cedula, 
+                        u.correo_electronico, r.nombre_rol, u.fecha_creacion, 
+                        u.ultima_sesion
+                 FROM tic_usuarios u
+                 JOIN tic_roles r ON u.id_rol = r.id_rol
+                 ORDER BY u.nombre, u.apellido";
+        
+        $stmt = $conn->query($query);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        writeLog("Obteniendo lista de personal: " . count($result) . " registros encontrados", "staff");
+        return $result;
     } catch(PDOException $e) {
+        writeLog("Error al obtener personal: " . $e->getMessage(), "staff");
+        http_response_code(500);
         return ['error' => $e->getMessage()];
     }
 }
 
-// Get staff member by ID
-function getStaffById($id) {
+// Función para obtener un miembro del personal por ID
+function getStaffMember($id) {
     global $conn;
     try {
-        $stmt = $conn->prepare("SELECT 
-            u.id_usuario as id,
-            u.nombre,
-            u.apellido,
-            u.cedula,
-            r.nombre_rol as rol,
-            u.correo_electronico as username
-        FROM tic_usuarios u
-        JOIN tic_roles r ON u.id_rol = r.id_rol
-        WHERE u.id_usuario = ?");
+        $stmt = $conn->prepare("SELECT u.id_usuario, u.nombre, u.apellido, u.cedula, 
+                                      u.correo_electronico, r.nombre_rol, u.fecha_creacion, 
+                                      u.ultima_sesion
+                               FROM tic_usuarios u
+                               JOIN tic_roles r ON u.id_rol = r.id_rol
+                               WHERE u.id_usuario = ?");
         $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($result) {
+            writeLog("Personal encontrado con ID: " . $id, "staff");
+            return $result;
+        } else {
+            writeLog("No se encontró personal con ID: " . $id, "staff");
+            http_response_code(404);
+            return ['error' => 'Staff member not found'];
+        }
     } catch(PDOException $e) {
+        writeLog("Error al obtener personal con ID " . $id . ": " . $e->getMessage(), "staff");
+        http_response_code(500);
         return ['error' => $e->getMessage()];
     }
 }
 
-// Update staff member
-function updateStaff($id, $data) {
+// Función para crear un nuevo miembro del personal
+function createStaffMember($data) {
     global $conn;
     try {
+        writeLog("Intentando crear nuevo personal con datos: " . json_encode($data), "staff");
+        
+        // Verificar si el correo ya existe
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM tic_usuarios WHERE correo_electronico = ?");
+        $stmt->execute([$data['correo_electronico']]);
+        if ($stmt->fetchColumn() > 0) {
+            writeLog("Error: Correo electrónico ya existe: " . $data['correo_electronico'], "staff");
+            http_response_code(409);
+            return ['error' => 'Email already exists'];
+        }
+
+        // Verificar si la cédula ya existe
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM tic_usuarios WHERE cedula = ?");
+        $stmt->execute([$data['cedula']]);
+        if ($stmt->fetchColumn() > 0) {
+            writeLog("Error: Cédula ya existe: " . $data['cedula'], "staff");
+            http_response_code(409);
+            return ['error' => 'ID number already exists'];
+        }
+
+        $stmt = $conn->prepare("INSERT INTO tic_usuarios (
+            nombre, apellido, cedula, correo_electronico, 
+            password_hash, id_rol
+        ) VALUES (?, ?, ?, ?, ?, ?)");
+
+        $passwordHash = password_hash($data['password'], PASSWORD_BCRYPT);
+
+        $stmt->execute([
+            $data['nombre'],
+            $data['apellido'],
+            $data['cedula'],
+            $data['correo_electronico'],
+            $passwordHash,
+            $data['id_rol']
+        ]);
+
+        $newId = $conn->lastInsertId();
+        writeLog("Personal creado exitosamente con ID: " . $newId, "staff");
+        http_response_code(201);
+        return ['success' => true, 'message' => 'Staff member created successfully', 'id' => $newId];
+    } catch(PDOException $e) {
+        writeLog("Error al crear personal: " . $e->getMessage(), "staff");
+        http_response_code(500);
+        return ['error' => $e->getMessage()];
+    }
+}
+
+// Función para actualizar un miembro del personal
+function updateStaffMember($id, $data) {
+    global $conn;
+    try {
+        writeLog("Intentando actualizar personal ID: " . $id . " con datos: " . json_encode($data), "staff");
+        
         $updateFields = [];
         $params = [];
-        
-        // Map fields to database columns
-        $fieldMap = [
-            'nombre' => 'nombre',
-            'apellido' => 'apellido',
-            'cedula' => 'cedula',
-            'username' => 'correo_electronico',
-            'rol' => 'id_rol'
-        ];
-        
-        foreach ($data as $key => $value) {
-            if (isset($fieldMap[$key])) {
-                if ($key === 'rol') {
-                    // Get role ID from role name
-                    $stmtRole = $conn->prepare("SELECT id_rol FROM tic_roles WHERE nombre_rol = ?");
-                    $stmtRole->execute([$value]);
-                    $roleId = $stmtRole->fetchColumn();
-                    if ($roleId) {
-                        $updateFields[] = "id_rol = ?";
-                        $params[] = $roleId;
-                    }
-                } else {
-                    $updateFields[] = $fieldMap[$key] . " = ?";
-                    $params[] = $value;
-                }
+
+        if (isset($data['nombre'])) {
+            $updateFields[] = "nombre = ?";
+            $params[] = $data['nombre'];
+        }
+        if (isset($data['apellido'])) {
+            $updateFields[] = "apellido = ?";
+            $params[] = $data['apellido'];
+        }
+        if (isset($data['correo_electronico'])) {
+            // Verificar si el nuevo correo ya existe para otro usuario
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM tic_usuarios WHERE correo_electronico = ? AND id_usuario != ?");
+            $stmt->execute([$data['correo_electronico'], $id]);
+            if ($stmt->fetchColumn() > 0) {
+                writeLog("Error: Correo electrónico ya existe: " . $data['correo_electronico'], "staff");
+                http_response_code(409);
+                return ['error' => 'Email already exists'];
             }
+            $updateFields[] = "correo_electronico = ?";
+            $params[] = $data['correo_electronico'];
         }
-        
-        // Handle password update separately if provided
-        if (isset($data['password']) && !empty($data['password'])) {
+        if (isset($data['password'])) {
             $updateFields[] = "password_hash = ?";
-            $params[] = password_hash($data['password'], PASSWORD_DEFAULT);
+            $params[] = password_hash($data['password'], PASSWORD_BCRYPT);
         }
-        
+        if (isset($data['id_rol'])) {
+            $updateFields[] = "id_rol = ?";
+            $params[] = $data['id_rol'];
+        }
+
         if (empty($updateFields)) {
-            return ['error' => 'No hay campos para actualizar'];
+            writeLog("No hay campos para actualizar en personal ID: " . $id, "staff");
+            http_response_code(400);
+            return ['error' => 'No fields to update'];
         }
 
         $params[] = $id;
-        $updateQuery = "UPDATE tic_usuarios SET " . implode(', ', $updateFields) . " WHERE id_usuario = ?";
+        $query = "UPDATE tic_usuarios SET " . implode(", ", $updateFields) . " WHERE id_usuario = ?";
         
-        $stmt = $conn->prepare($updateQuery);
+        $stmt = $conn->prepare($query);
         $stmt->execute($params);
-        
-        return ['success' => true];
+
+        writeLog("Personal ID: " . $id . " actualizado exitosamente", "staff");
+        return ['success' => true, 'message' => 'Staff member updated successfully'];
     } catch(PDOException $e) {
+        writeLog("Error al actualizar personal ID " . $id . ": " . $e->getMessage(), "staff");
+        http_response_code(500);
         return ['error' => $e->getMessage()];
     }
 }
 
-// Handle requests
+// Procesar la solicitud
 $method = $_SERVER['REQUEST_METHOD'];
-$response = [];
+writeLog("Método de solicitud recibido: " . $method, "staff");
 
-switch ($method) {
+switch($method) {
     case 'GET':
         if (isset($_GET['id'])) {
-            $response = getStaffById($_GET['id']);
+            echo json_encode(getStaffMember($_GET['id']));
         } else {
-            $response = getAllStaff();
+            echo json_encode(getAllStaff());
+        }
+        break;
+        
+    case 'POST':
+        $data = json_decode(file_get_contents('php://input'), true);
+        if ($data) {
+            echo json_encode(createStaffMember($data));
+        } else {
+            writeLog("Error: Datos inválidos recibidos en POST", "staff");
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid data']);
         }
         break;
         
     case 'PUT':
+        if (!isset($_GET['id'])) {
+            writeLog("Error: ID de personal no proporcionado en PUT", "staff");
+            http_response_code(400);
+            echo json_encode(['error' => 'Staff ID required']);
+            break;
+        }
+        
         $data = json_decode(file_get_contents('php://input'), true);
-        if (isset($data['id'])) {
-            $id = $data['id'];
-            $response = updateStaff($id, $data);
+        if ($data) {
+            echo json_encode(updateStaffMember($_GET['id'], $data));
         } else {
-            $response = ['error' => 'Staff ID is required'];
+            writeLog("Error: Datos inválidos recibidos en PUT", "staff");
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid data']);
         }
         break;
         
     default:
-        $response = ['error' => 'Invalid request method'];
+        writeLog("Método no soportado: " . $method, "staff");
+        http_response_code(405);
+        echo json_encode(['error' => 'Method not allowed']);
 }
-
-echo json_encode($response);
 ?> 

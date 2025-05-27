@@ -4,10 +4,11 @@ header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
+// Configuración de la base de datos para producción
 $host = "localhost";
-$user = "ducjinsp_sena";
+$user = "u291982824_miayudatic";
 $password = "senaguainia2025";
-$dbname = "ducjinsp_demo";
+$dbname = "u291982824_miayudatic";
 
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);

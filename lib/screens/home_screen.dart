@@ -14,6 +14,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _passwordController = TextEditingController();
   final _apiService = ApiService();
   bool _isLoading = false;
+  bool _obscurePassword = true; // Para controlar la visibilidad de la contraseña
 
   @override
   void dispose() {
@@ -30,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       try {
         final user = await _apiService.login(
-          _usernameController.text,
+          _usernameController.text.trim(), // Eliminamos espacios en blanco
           _passwordController.text,
         );
 
@@ -44,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text('Error de inicio de sesión: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -92,6 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           decoration: const InputDecoration(
                             labelText: 'Correo Institucional',
                             border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.email),
                           ),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
@@ -107,11 +109,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _passwordController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Contraseña',
-                            border: OutlineInputBorder(),
+                            border: const OutlineInputBorder(),
+                            prefixIcon: const Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
                           ),
-                          obscureText: true,
+                          obscureText: _obscurePassword,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Por favor ingrese su contraseña';
@@ -125,8 +138,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 50,
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _handleLogin,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                            ),
                             child: _isLoading
-                                ? const CircularProgressIndicator()
+                                ? const CircularProgressIndicator(color: Colors.white)
                                 : const Text('Ingresar'),
                           ),
                         ),
