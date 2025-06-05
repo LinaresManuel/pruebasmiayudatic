@@ -12,7 +12,7 @@ function getTickets() {
                  LEFT JOIN tic_tipos_servicio ts ON t.id_tipo_servicio = ts.id_tipo_servicio
                  LEFT JOIN tic_estados_solicitud es ON t.id_estado = es.id_estado
                  LEFT JOIN tic_usuarios u ON t.id_personal_ti_asignado = u.id_usuario
-                 ORDER BY t.fecha_creacion_registro ASC";
+                 ORDER BY t.fecha_creacion_registro ASC WHERE t.id_estado = 1";
         
         $stmt = $conn->query($query);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);

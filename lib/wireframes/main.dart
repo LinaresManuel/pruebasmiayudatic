@@ -1,57 +1,84 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import 'package:http/http.dart' as http;
+import 'screens/home_screen.dart';
+import 'screens/reportar_falla_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
+void main() {
+  runApp(const MyApp());
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _idController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _apiService = ApiService();
-  bool _isLoading = false;
-  bool _obscurePassword = true;
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
-  void dispose() {
-    _idController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'MI AYUDA TIC',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const LoginScreen(),
+      routes: {
+        '/home': (context) => const HomeScreen(),
+        '/reportar-falla':
+            (context) => const ReportarFallaScreen(), // <-- corrige aquí
+      },
+    );
   }
+}
 
-  Future<void> _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-      try {
-        final user = await _apiService.login(
-          _idController.text.trim(),
-          _passwordController.text,
-        );
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
-        if (!mounted) return;
+class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _isLoading = false;
 
-        if (user != null) {
-          Navigator.pushReplacementNamed(context, '/support-dashboard');
-        }
-      } catch (e) {
-        if (!mounted) return;
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+          'https://ducjin.space/miayudatic/apisoriginales/validar_sesion.php',
+        ),
+        body: {
+          'cedula': _idController.text.trim(),
+          'contrasena': _passwordController.text.trim(),
+        },
+      );
+
+      if (!mounted) return;
+
+      if (response.body.contains('success')) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error de inicio de sesión: ${e.toString()}')),
+          const SnackBar(content: Text('Usuario o contraseña incorrectos')),
         );
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Error de conexión')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -80,23 +107,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       'assets/sena_logo.png',
                       height: 120,
                       width: 180,
-                      errorBuilder: (context, error, stackTrace) {
-                        print('Error loading image: $error');
-                        return Container(
-                          height: 120,
-                          width: 180,
-                          color: Colors.grey[800],
-                          child: const Icon(
-                            Icons.error_outline,
-                            color: Colors.white,
-                            size: 40,
-                          ),
-                        );
-                      },
                     ),
                   ),
                   Card(
                     elevation: 6,
+
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -130,10 +145,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             keyboardType: TextInputType.number,
-                            validator: (value) =>
-                                value == null || value.isEmpty
-                                    ? 'Campo requerido'
-                                    : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Campo requerido'
+                                        : null,
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -148,9 +164,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ? Icons.visibility_off
                                       : Icons.visibility,
                                 ),
-                                onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword,
-                                ),
+                                onPressed:
+                                    () => setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    ),
                               ),
                               filled: true,
                               fillColor: Colors.white,
@@ -160,35 +178,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            validator: (value) =>
-                                value == null || value.isEmpty
-                                    ? 'Campo requerido'
-                                    : null,
+                            validator:
+                                (value) =>
+                                    value == null || value.isEmpty
+                                        ? 'Campo requerido'
+                                        : null,
                           ),
                           const SizedBox(height: 24),
                           SizedBox(
                             width: double.infinity,
                             height: 48,
                             child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
+                              onPressed: _isLoading ? null : _login,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.cyan[600],
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                foregroundColor: Colors.black,
+                                foregroundColor:
+                                    Colors.black, // Color del texto
                               ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                  : const Text(
-                                      'Iniciar Sesión',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black,
+                              child:
+                                  _isLoading
+                                      ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                      : const Text(
+                                        'Iniciar Sesión',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.black,
+                                        ), // Color del texto
                                       ),
-                                    ),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -197,21 +218,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             height: 48,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.pushNamed(context, '/ticket-form');
+                                Navigator.pushNamed(context, '/reportar-falla');
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red[400],
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                foregroundColor: Colors.black,
+                                foregroundColor:
+                                    Colors.black, // Color del texto
                               ),
                               child: const Text(
                                 'Reportar Falla',
                                 style: TextStyle(
                                   fontSize: 18,
                                   color: Colors.black,
-                                ),
+                                ), // Color del texto
                               ),
                             ),
                           ),
@@ -233,4 +255,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-} 
+}

@@ -147,11 +147,10 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
   Future<void> _closeTicket(Ticket ticket) async {
     try {
       final updates = {
-        'id_estado': 3, // ID del estado 'Cerrada'
+        'id_estado': 3, // ID del estado 'Cerrada' (3 = Cerrada, 1 = Abierta)
         'fecha_cierre': DateTime.now().toIso8601String(),
       };
 
-      print('Cerrando ticket: ${ticket.id} con datos: $updates'); // Debug log
       await _apiService.updateTicket(ticket.id!, updates);
       await _loadTickets();
 
@@ -164,7 +163,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      print('Error en _closeTicket: $e'); // Debug log
+      print('Error en _closeTicket: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al cerrar la solicitud: $e'),
@@ -181,36 +180,24 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
       final updates = <String, dynamic>{};
       
       if (serviceType != null) {
-        // Buscar el ID del tipo de servicio por nombre
         final serviceTypeData = _serviceTypes.firstWhere(
           (type) => type['nombre_tipo_servicio'] == serviceType,
           orElse: () => throw Exception('Tipo de servicio no encontrado'),
         );
         updates['id_tipo_servicio'] = int.parse(serviceTypeData['id_tipo_servicio'].toString());
-        
-        // Actualizar el estado a "En Proceso" si no está cerrado
-        if (ticket.estado != 'Cerrada') {
-          updates['id_estado'] = 2; // 2 = En Proceso
-        }
       }
       
       if (staffName != null) {
-        // Buscar el ID del personal por nombre completo
         final staffData = _supportStaff.firstWhere(
           (staff) => staff['nombre_completo'] == staffName,
           orElse: () => throw Exception('Personal no encontrado'),
         );
         updates['id_personal_ti_asignado'] = int.parse(staffData['id_usuario'].toString());
-        
-        // Actualizar el estado a "En Proceso" si no está cerrado
-        if (ticket.estado != 'Cerrada') {
-          updates['id_estado'] = 2; // 2 = En Proceso
-        }
       }
 
-      print('Enviando actualización: $updates'); // Debug log
+      print('Enviando actualización: $updates'); // Log para debug
       await _apiService.updateTicket(ticket.id!, updates);
-      await _loadTickets(); // Recargar la lista de tickets
+      await _loadTickets();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -221,7 +208,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      print('Error en _assignTicket: $e'); // Debug log
+      print('Error en _assignTicket: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al actualizar la solicitud: $e'),
@@ -253,188 +240,209 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Panel de Control'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadInitialData,
+        toolbarHeight: 80,
+        backgroundColor: Colors.black,
+        automaticallyImplyLeading: false,
+        flexibleSpace: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/sena_logo.png',
+                    height: 50,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 50,
+                        height: 50,
+                        color: Colors.grey[800],
+                        child: const Icon(Icons.business, color: Colors.white),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Servicios TIC Sena Regional Guainía',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout, color: Colors.white),
+                onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/');
-            },
-          ),
-        ],
+        ),
       ),
-      body: Column(
-        children: [
-          // Staff Info Header
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            color: Colors.blue.shade50,
-            child: Row(
+      body: _loadingMasterData
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
               children: [
-                const CircleAvatar(
-                  radius: 30,
-                  child: Icon(Icons.person, size: 40),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Juan Pérez', // TODO: Get from user state
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      const Text(
+                        '/ Inicio / Consola de Servicios',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Cédula: 12345678',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      Text(
-                        'Rol: Técnico de Soporte',
-                        style: TextStyle(fontSize: 16),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Gestión de Solicitudes',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _loadTickets,
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Actualizar'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.cyan[600],
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          // Tickets Table
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Error al cargar las solicitudes: $_error',
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _loadInitialData,
-                              child: const Text('Reintentar'),
-                            ),
-                          ],
-                        ),
-                      )
-                    : _tickets.isEmpty
-                        ? const Center(
-                            child: Text('No hay solicitudes registradas'),
-                          )
-                        : SingleChildScrollView(
+                if (_error != null)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Error: $_error',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+                if (_isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1600),
+                        child: Card(
+                          margin: const EdgeInsets.all(16.0),
+                          elevation: 6,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-                            child: SingleChildScrollView(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minWidth: 1600),
                               child: DataTable(
+                                headingRowColor: MaterialStateProperty.all(Colors.grey[100]),
+                                columnSpacing: 20,
                                 columns: const [
-                                  DataColumn(label: Text('ID')),
+                                  DataColumn(label: Text('ID'), numeric: true),
+                                  DataColumn(label: Text('Fecha')),
+                                  DataColumn(label: Text('Solicitante')),
+                                  DataColumn(label: Text('Dependencia')),
+                                  DataColumn(
+                                    label: Text('Descripción'),
+                                    tooltip: 'Haz clic en el ícono de información para ver la descripción completa',
+                                  ),
                                   DataColumn(label: Text('Estado')),
-                                  DataColumn(label: Text('Tipo')),
-                                  DataColumn(label: Text('Asignado a')),
-                                  DataColumn(label: Text('Fecha Creación')),
-                                  DataColumn(label: Text('Fecha Cierre')),
-                                  DataColumn(label: Text('Descripción')),
+                                  DataColumn(label: Text('Tipo de Servicio')),
+                                  DataColumn(label: Text('Personal Asignado')),
                                   DataColumn(label: Text('Acciones')),
                                 ],
                                 rows: _tickets.map((ticket) {
                                   return DataRow(
                                     cells: [
                                       DataCell(Text(ticket.id.toString())),
+                                      DataCell(Text(DateFormat('dd/MM/yyyy').format(ticket.fechaReporte))),
+                                      DataCell(Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}')),
+                                      DataCell(Text(ticket.dependencia)),
                                       DataCell(
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: ticket.estado == 'Cerrada'
-                                                ? Colors.red
-                                                : Colors.green,
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
+                                        SizedBox(
+                                          width: 200,
                                           child: Text(
-                                            ticket.estado ?? 'Abierta',
-                                            style: const TextStyle(
-                                                color: Colors.white),
+                                            ticket.descripcion,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
                                           ),
                                         ),
                                       ),
                                       DataCell(
-                                        _loadingMasterData
-                                            ? const CircularProgressIndicator()
-                                            : DropdownButton<String>(
-                                                value: ticket.tipoServicio != null ? ticket.tipoServicio : null,
-                                                hint: const Text('Seleccionar'),
-                                                items: _serviceTypes.map((type) {
-                                                  return DropdownMenuItem<String>(
-                                                    value: type['nombre_tipo_servicio'],
-                                                    child: Text(type['nombre_tipo_servicio']),
-                                                  );
-                                                }).toList(),
-                                                onChanged: ticket.estado != 'Cerrada'
-                                                    ? (String? newValue) {
-                                                        _assignTicket(ticket, newValue, null);
-                                                      }
-                                                    : null,
-                                              ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(ticket.estado),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            ticket.estado ?? 'Abierta',
+                                            style: const TextStyle(color: Colors.white),
+                                          ),
+                                        ),
                                       ),
                                       DataCell(
-                                        _loadingMasterData
-                                            ? const CircularProgressIndicator()
-                                            : DropdownButton<String>(
-                                                value: ticket.personalAsignado != null ? ticket.personalAsignado : null,
-                                                hint: const Text('Asignar'),
-                                                items: _supportStaff.map((staff) {
-                                                  return DropdownMenuItem<String>(
-                                                    value: staff['nombre_completo'],
-                                                    child: Text(staff['nombre_completo']),
-                                                  );
-                                                }).toList(),
-                                                onChanged: ticket.estado != 'Cerrada'
-                                                    ? (String? newValue) {
-                                                        _assignTicket(ticket, null, newValue);
-                                                      }
-                                                    : null,
-                                              ),
+                                        DropdownButton<String>(
+                                          value: ticket.tipoServicio,
+                                          hint: const Text('Seleccionar'),
+                                          items: _serviceTypes.map((type) {
+                                            return DropdownMenuItem<String>(
+                                              value: type['nombre_tipo_servicio'],
+                                              child: Text(type['nombre_tipo_servicio']),
+                                            );
+                                          }).toList(),
+                                          onChanged: ticket.estado != 'Cerrada'
+                                              ? (String? newValue) {
+                                                  _assignTicket(ticket, newValue, null);
+                                                }
+                                              : null,
+                                        ),
                                       ),
-                                      DataCell(Text(DateFormat('dd/MM/yyyy')
-                                          .format(ticket.fechaCreacion!))),
-                                      DataCell(Text(ticket.fechaCierre != null
-                                          ? DateFormat('dd/MM/yyyy')
-                                              .format(ticket.fechaCierre!)
-                                          : '-')),
-                                      DataCell(Text(
-                                        ticket.descripcion,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      )),
+                                      DataCell(
+                                        DropdownButton<String>(
+                                          value: ticket.personalAsignado,
+                                          hint: const Text('Asignar'),
+                                          items: _supportStaff.map((staff) {
+                                            return DropdownMenuItem<String>(
+                                              value: staff['nombre_completo'],
+                                              child: Text(staff['nombre_completo']),
+                                            );
+                                          }).toList(),
+                                          onChanged: ticket.estado != 'Cerrada'
+                                              ? (String? newValue) {
+                                                  _assignTicket(ticket, null, newValue);
+                                                }
+                                              : null,
+                                        ),
+                                      ),
                                       DataCell(
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             IconButton(
                                               icon: const Icon(Icons.info),
-                                              onPressed: () =>
-                                                  _showTicketDetails(ticket),
-                                              tooltip: 'Ver detalles',
+                                              onPressed: () => _showTicketDetails(ticket),
+                                              color: Colors.blue,
                                             ),
                                             if (ticket.estado != 'Cerrada')
                                               IconButton(
-                                                icon: const Icon(
-                                                    Icons.check_circle_outline),
-                                                onPressed: () =>
-                                                    _closeTicket(ticket),
-                                                tooltip: 'Cerrar ticket',
+                                                icon: const Icon(Icons.check_circle),
+                                                onPressed: () => _closeTicket(ticket),
+                                                color: Colors.green,
                                               ),
                                           ],
                                         ),
@@ -445,9 +453,16 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                               ),
                             ),
                           ),
-          ),
-        ],
-      ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
     );
+  }
+
+  Color _getStatusColor(String? status) {
+    return status == 'Cerrada' ? Colors.green : Colors.orange;
   }
 } 
