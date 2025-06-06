@@ -337,133 +337,226 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                   Expanded(
                     child: Align(
                       alignment: Alignment.topCenter,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1600),
-                        child: Card(
-                          margin: const EdgeInsets.all(16.0),
-                          elevation: 6,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(minWidth: 1600),
-                              child: DataTable(
-                                headingRowColor: MaterialStateProperty.all(Colors.grey[100]),
-                                columnSpacing: 20,
-                                columns: const [
-                                  DataColumn(label: Text('ID'), numeric: true),
-                                  DataColumn(label: Text('Fecha')),
-                                  DataColumn(label: Text('Solicitante')),
-                                  DataColumn(label: Text('Dependencia')),
-                                  DataColumn(
-                                    label: Text('Descripción'),
-                                    tooltip: 'Haz clic en el ícono de información para ver la descripción completa',
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isSmallScreen = constraints.maxWidth < 800;
+                          final isMediumScreen = constraints.maxWidth < 1200;
+                          
+                          return Card(
+                            margin: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
+                            elevation: 6,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: SingleChildScrollView(
+                                child: Container(
+                                  constraints: BoxConstraints(
+                                    minWidth: isSmallScreen ? constraints.maxWidth : 800,
+                                    maxWidth: isMediumScreen ? constraints.maxWidth : 1600,
                                   ),
-                                  DataColumn(label: Text('Estado')),
-                                  DataColumn(label: Text('Tipo de Servicio')),
-                                  DataColumn(label: Text('Personal Asignado')),
-                                  DataColumn(label: Text('Acciones')),
-                                ],
-                                rows: _tickets.map((ticket) {
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(Text(ticket.id.toString())),
-                                      DataCell(Text(DateFormat('dd/MM/yyyy').format(ticket.fechaReporte))),
-                                      DataCell(Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}')),
-                                      DataCell(Text(ticket.dependencia)),
-                                      DataCell(
-                                        SizedBox(
-                                          width: 200,
-                                          child: Text(
-                                            ticket.descripcion,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                          ),
-                                        ),
+                                  child: DataTable(
+                                    headingRowColor: MaterialStateProperty.all(Colors.grey[100]),
+                                    columnSpacing: isSmallScreen ? 10 : 20,
+                                    horizontalMargin: isSmallScreen ? 10 : 24,
+                                    columns: [
+                                      DataColumn(
+                                        label: Text('ID', 
+                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                        ), 
+                                        numeric: true
                                       ),
-                                      DataCell(
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: _getStatusColor(ticket.estado),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: Text(
-                                            ticket.estado ?? 'Abierta',
-                                            style: const TextStyle(color: Colors.white),
-                                          ),
+                                      if (!isSmallScreen) 
+                                        DataColumn(
+                                          label: Text('Fecha',
+                                            style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          )
                                         ),
+                                      DataColumn(
+                                        label: Text('Solicitante',
+                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                        )
                                       ),
-                                      DataCell(
-                                        DropdownButton<String>(
-                                          value: ticket.tipoServicio,
-                                          hint: const Text('Seleccionar'),
-                                          items: _serviceTypes.map((type) {
-                                            return DropdownMenuItem<String>(
-                                              value: type['nombre_tipo_servicio'],
-                                              child: Text(type['nombre_tipo_servicio']),
-                                            );
-                                          }).toList(),
-                                          onChanged: ticket.estado != 'Cerrada'
-                                              ? (String? newValue) {
-                                                  _assignTicket(ticket, newValue, null);
-                                                }
-                                              : null,
+                                      if (!isSmallScreen) 
+                                        DataColumn(
+                                          label: Text('Dependencia',
+                                            style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          )
                                         ),
+                                      DataColumn(
+                                        label: Text('Descripción',
+                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                        ),
+                                        tooltip: 'Haz clic en el ícono de información para ver la descripción completa',
                                       ),
-                                      DataCell(
-                                        DropdownButton<String>(
-                                          value: ticket.personalAsignado,
-                                          hint: const Text('Asignar'),
-                                          items: _supportStaff.map((staff) {
-                                            return DropdownMenuItem<String>(
-                                              value: staff['nombre_completo'],
-                                              child: Text(staff['nombre_completo']),
-                                            );
-                                          }).toList(),
-                                          onChanged: ticket.estado != 'Cerrada'
-                                              ? (String? newValue) {
-                                                  _assignTicket(ticket, null, newValue);
-                                                }
-                                              : null,
-                                        ),
+                                      DataColumn(
+                                        label: Text('Estado',
+                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                        )
                                       ),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.info),
-                                              onPressed: () => _showTicketDetails(ticket),
-                                              color: Colors.blue,
-                                            ),
-                                            if (ticket.estado != 'Cerrada')
-                                              IconButton(
-                                                icon: const Icon(Icons.check_circle),
-                                                onPressed: () => Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) => DetailsScreen(
-                                                      caseId: ticket.id.toString(),
-                                                      description: ticket.descripcion,
-                                                      assignedStaff: ticket.personalAsignado,
-                                                    ),
-                                                  ),
-                                                ),
-                                                color: Colors.green,
-                                              ),
-                                          ],
+                                      if (!isMediumScreen)
+                                        DataColumn(
+                                          label: Text('Tipo de Servicio',
+                                            style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          )
                                         ),
+                                      DataColumn(
+                                        label: Text('Personal Asignado',
+                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                        )
+                                      ),
+                                      DataColumn(
+                                        label: Text('Acciones',
+                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                        )
                                       ),
                                     ],
-                                  );
-                                }).toList(),
+                                    rows: _tickets.map((ticket) {
+                                      return DataRow(
+                                        cells: [
+                                          DataCell(
+                                            Text(
+                                              ticket.id.toString(),
+                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                            )
+                                          ),
+                                          if (!isSmallScreen)
+                                            DataCell(
+                                              Text(
+                                                DateFormat('dd/MM/yyyy').format(ticket.fechaReporte),
+                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                              )
+                                            ),
+                                          DataCell(
+                                            Text(
+                                              '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}',
+                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                            )
+                                          ),
+                                          if (!isSmallScreen)
+                                            DataCell(
+                                              Text(
+                                                ticket.dependencia,
+                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                              )
+                                            ),
+                                          DataCell(
+                                            Container(
+                                              width: isSmallScreen ? 100 : 200,
+                                              child: Text(
+                                                ticket.descripcion,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                              ),
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: isSmallScreen ? 4 : 8, 
+                                                vertical: isSmallScreen ? 2 : 4
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: _getStatusColor(ticket.estado),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                ticket.estado ?? 'Abierta',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: isSmallScreen ? 11 : 13
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          if (!isMediumScreen)
+                                            DataCell(
+                                              DropdownButton<String>(
+                                                value: ticket.tipoServicio,
+                                                hint: Text(
+                                                  'Seleccionar',
+                                                  style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                                ),
+                                                items: _serviceTypes.map((type) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: type['nombre_tipo_servicio'],
+                                                    child: Text(
+                                                      type['nombre_tipo_servicio'],
+                                                      style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: ticket.estado != 'Cerrada'
+                                                    ? (String? newValue) {
+                                                        _assignTicket(ticket, newValue, null);
+                                                      }
+                                                    : null,
+                                              ),
+                                            ),
+                                          DataCell(
+                                            DropdownButton<String>(
+                                              value: ticket.personalAsignado,
+                                              hint: Text(
+                                                'Asignar',
+                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                              ),
+                                              items: _supportStaff.map((staff) {
+                                                return DropdownMenuItem<String>(
+                                                  value: staff['nombre_completo'],
+                                                  child: Text(
+                                                    staff['nombre_completo'],
+                                                    style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                                  ),
+                                                );
+                                              }).toList(),
+                                              onChanged: ticket.estado != 'Cerrada'
+                                                  ? (String? newValue) {
+                                                      _assignTicket(ticket, null, newValue);
+                                                    }
+                                                  : null,
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons.info,
+                                                    size: isSmallScreen ? 18 : 24,
+                                                  ),
+                                                  onPressed: () => _showTicketDetails(ticket),
+                                                  color: Colors.blue,
+                                                ),
+                                                if (ticket.estado != 'Cerrada')
+                                                  IconButton(
+                                                    icon: Icon(
+                                                      Icons.check_circle,
+                                                      size: isSmallScreen ? 18 : 24,
+                                                    ),
+                                                    onPressed: () => Navigator.pushNamed(
+                                                      context,
+                                                      '/case-details',
+                                                      arguments: {
+                                                        'caseId': ticket.id.toString(),
+                                                      },
+                                                    ),
+                                                    color: Colors.green,
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ),
                   ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/ticket_form_screen.dart';
 import 'screens/support_dashboard_screen.dart';
+import 'screens/details_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +24,10 @@ class MyApp extends StatelessWidget {
         '/': (context) => const HomeScreen(),
         '/ticket-form': (context) => const TicketFormScreen(),
         '/support-dashboard': (context) => const SupportDashboardScreen(),
+        '/case-details': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return DetailsScreen(caseId: args['caseId']);
+        },
       },
     );
   }
