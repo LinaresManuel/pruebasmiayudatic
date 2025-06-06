@@ -3,6 +3,7 @@ import '../models/ticket_model.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
+import './details_screen.dart';
 
 class SupportDashboardScreen extends StatefulWidget {
   const SupportDashboardScreen({super.key});
@@ -441,7 +442,16 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                             if (ticket.estado != 'Cerrada')
                                               IconButton(
                                                 icon: const Icon(Icons.check_circle),
-                                                onPressed: () => _closeTicket(ticket),
+                                                onPressed: () => Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => DetailsScreen(
+                                                      caseId: ticket.id.toString(),
+                                                      description: ticket.descripcion,
+                                                      assignedStaff: ticket.personalAsignado,
+                                                    ),
+                                                  ),
+                                                ),
                                                 color: Colors.green,
                                               ),
                                           ],
