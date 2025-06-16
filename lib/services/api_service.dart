@@ -72,9 +72,13 @@ class ApiService {
   }
 
   // Tickets API
-  Future<List<Ticket>> getTickets() async {
+  Future<List<Ticket>> getTickets({int? estado}) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/tickets.php?order=asc'));
+      String url = '$baseUrl/tickets.php';
+      if (estado != null) {
+        url += '?estado=$estado';
+      }
+      final response = await http.get(Uri.parse(url));
       final data = jsonDecode(response.body);
       
       if (data is List) {
@@ -94,9 +98,13 @@ class ApiService {
       final response = await http.get(Uri.parse('$baseUrl/tickets.php?id=$id'));
       final data = jsonDecode(response.body);
       
-      if (data is List && data.isNotEmpty) {
-        // Si el backend devuelve una lista, tomamos el primer elemento
-        return Ticket.fromJson(data[0]);
+      if (data is List) {
+        // Buscar el ticket específico en la lista por su ID
+        final ticketData = data.firstWhere(
+          (ticket) => int.parse(ticket['id_solicitud'].toString()) == id,
+          orElse: () => throw Exception('Ticket no encontrado'),
+        );
+        return Ticket.fromJson(ticketData);
       } else if (data is Map<String, dynamic>) {
         // Si el backend devuelve un objeto directamente
         return Ticket.fromJson(data);
@@ -181,6 +189,22 @@ class ApiService {
       throw Exception('Personal no encontrado');
     } catch (e) {
       throw Exception('Error de conexión: $e');
+    }
+  }
+// nueva
+  Future<List<Ticket>> getClosedTickets() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/tickets.php?estado=cerrada'));
+      final data = jsonDecode(response.body);
+      
+      if (data is List) {
+        return data.map((ticket) => Ticket.fromJson(ticket)).toList();
+      } else if (data is Map<String, dynamic>) {
+        return [Ticket.fromJson(data)];
+      }
+      return [];
+    } catch (e) {
+      throw Exception('Error al obtener las solicitudes cerradas: $e');
     }
   }
 } 

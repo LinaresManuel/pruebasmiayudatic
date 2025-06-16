@@ -2,36 +2,7 @@
 require_once 'common.php';
 
 // Función para obtener todos los tickets
-function getTickets($estado = null) {
-    global $conn;
-    try {
-        $query = "SELECT t.*, d.nombre_dependencia, ts.nombre_tipo_servicio, es.nombre_estado,
-                        CONCAT(u.nombre, ' ', u.apellido) as personal_asignado
-                 FROM tic_solicitudes t
-                 LEFT JOIN tic_dependencias d ON t.id_dependencia = d.id_dependencia
-                 LEFT JOIN tic_tipos_servicio ts ON t.id_tipo_servicio = ts.id_tipo_servicio
-                 LEFT JOIN tic_estados_solicitud es ON t.id_estado = es.id_estado
-                 LEFT JOIN tic_usuarios u ON t.id_personal_ti_asignado = u.id_usuario";
-        $params = [];
-        if ($estado !== null) {
-            $query .= " WHERE t.id_estado = ?";
-            $params[] = $estado;
-        }
-        $query .= " ORDER BY t.fecha_creacion_registro ASC";
-        $stmt = $conn->prepare($query);
-        $stmt->execute($params);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        writeLog("Obteniendo tickets: " . count($result) . " registros encontrados", "tickets");
-        return $result;
-    } catch(PDOException $e) {
-        writeLog("Error al obtener tickets: " . $e->getMessage(), "tickets");
-        http_response_code(500);
-        return ['error' => $e->getMessage()];
-    }
-}
-
-// Función para obtener detalles de un ticket específico
-function getTicketDetails($ticketId) {
+function getTickets() {
     global $conn;
     try {
         $query = "SELECT t.*, d.nombre_dependencia, ts.nombre_tipo_servicio, es.nombre_estado,
@@ -41,22 +12,15 @@ function getTicketDetails($ticketId) {
                  LEFT JOIN tic_tipos_servicio ts ON t.id_tipo_servicio = ts.id_tipo_servicio
                  LEFT JOIN tic_estados_solicitud es ON t.id_estado = es.id_estado
                  LEFT JOIN tic_usuarios u ON t.id_personal_ti_asignado = u.id_usuario
-                 WHERE t.id_solicitud = ?";
+                 WHERE t.id_estado = 1
+                 ORDER BY t.fecha_creacion_registro ASC";
         
-        $stmt = $conn->prepare($query);
-        $stmt->execute([$ticketId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($result) {
-            writeLog("Obteniendo detalles del ticket ID: " . $ticketId, "tickets");
-            return $result;
-        }
-        
-        writeLog("Ticket no encontrado ID: " . $ticketId, "tickets");
-        http_response_code(404);
-        return ['error' => 'Ticket no encontrado'];
+        $stmt = $conn->query($query);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        writeLog("Obteniendo tickets: " . count($result) . " registros encontrados", "tickets");
+        return $result;
     } catch(PDOException $e) {
-        writeLog("Error al obtener detalles del ticket: " . $e->getMessage(), "tickets");
+        writeLog("Error al obtener tickets: " . $e->getMessage(), "tickets");
         http_response_code(500);
         return ['error' => $e->getMessage()];
     }
@@ -168,12 +132,7 @@ writeLog("Método de solicitud recibido: " . $method, "tickets");
 
 switch($method) {
     case 'GET':
-        if (isset($_GET['id'])) {
-            echo json_encode(getTicketDetails($_GET['id']));
-        } else {
-            $estado = isset($_GET['estado']) ? $_GET['estado'] : null;
-            echo json_encode(getTickets($estado));
-        }
+        echo json_encode(getTickets());
         break;
         
     case 'POST':

@@ -76,7 +76,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
         _error = null;
       });
 
-      final tickets = await _apiService.getTickets();
+      final tickets = await _apiService.getTickets(estado: 1);
       setState(() {
         _tickets = tickets;
       });
@@ -241,31 +241,64 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 80,
+        toolbarHeight: 160,
         backgroundColor: Colors.black,
         automaticallyImplyLeading: false,
         flexibleSpace: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              Image.asset(
+                'assets/sena_logo.png',
+                height: 120,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 120,
+                    height: 120,
+                    color: Colors.grey[800],
+                    child: const Icon(Icons.business, color: Colors.white),
+                  );
+                },
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'Servicios TIC Sena Regional Guainía',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout, color: Colors.white),
+                onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
+              ),
+            ],
+          ),
+        ),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Colors.black,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Image.asset(
                     'assets/sena_logo.png',
-                    height: 50,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 50,
-                        height: 50,
-                        color: Colors.grey[800],
-                        child: const Icon(Icons.business, color: Colors.white),
-                      );
-                    },
+                    height: 80,
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(height: 12),
                   const Text(
-                    'Servicios TIC Sena Regional Guainía',
+                    'Menú de Servicios',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -274,12 +307,38 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                   ),
                 ],
               ),
-              IconButton(
-                icon: const Icon(Icons.logout, color: Colors.white),
-                onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.assignment),
+              title: const Text('Incidentes'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+                          ListTile(
+                leading: const Icon(Icons.check_circle),
+                title: const Text('Solicitudes Cerradas'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/solicitud-cerrada');
+                },
               ),
-            ],
-          ),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Estadisticas de Personal TIC'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Configuración'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
       ),
       body: _loadingMasterData
@@ -299,12 +358,25 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Gestión de Solicitudes',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              Builder(
+                                builder: (context) => IconButton(
+                                  icon: const Icon(Icons.menu),
+                                  onPressed: () {
+                                    Scaffold.of(context).openDrawer();
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Gestión de Solicitudes',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                           ElevatedButton.icon(
                             onPressed: _loadTickets,
@@ -357,58 +429,84 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                     maxWidth: isMediumScreen ? constraints.maxWidth : 1600,
                                   ),
                                   child: DataTable(
-                                    headingRowColor: MaterialStateProperty.all(Colors.grey[100]),
+                                    headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
                                     columnSpacing: isSmallScreen ? 10 : 20,
                                     horizontalMargin: isSmallScreen ? 10 : 24,
                                     columns: [
                                       DataColumn(
                                         label: Text('ID', 
-                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                          )
                                         ), 
                                         numeric: true
                                       ),
                                       if (!isSmallScreen) 
                                         DataColumn(
                                           label: Text('Fecha',
-                                            style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                            style: TextStyle(fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                            )
                                           )
                                         ),
                                       DataColumn(
                                         label: Text('Solicitante',
-                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                          )
                                         )
                                       ),
                                       if (!isSmallScreen) 
                                         DataColumn(
                                           label: Text('Dependencia',
-                                            style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                            style: TextStyle(
+                                              fontSize: isSmallScreen ? 12 : 14,
+                                              fontWeight: FontWeight.bold
+                                            )
                                           )
                                         ),
                                       DataColumn(
                                         label: Text('Descripción',
-                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                          )
                                         ),
                                         tooltip: 'Haz clic en el ícono de información para ver la descripción completa',
                                       ),
                                       DataColumn(
                                         label: Text('Estado',
-                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                          )
                                         )
                                       ),
                                       if (!isMediumScreen)
                                         DataColumn(
                                           label: Text('Tipo de Servicio',
-                                            style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                            style: TextStyle(
+                                              fontSize: isSmallScreen ? 12 : 14,
+                                              fontWeight: FontWeight.bold
+                                            )
                                           )
                                         ),
                                       DataColumn(
                                         label: Text('Personal Asignado',
-                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                          )
                                         )
                                       ),
                                       DataColumn(
                                         label: Text('Acciones',
-                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14)
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                          )
                                         )
                                       ),
                                     ],

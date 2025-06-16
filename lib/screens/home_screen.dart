@@ -16,44 +16,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
-  @override
-  void dispose() {
-    _idController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      try {
-        final user = await _apiService.login(
-          _idController.text.trim(),
-          _passwordController.text,
-        );
-
-        if (!mounted) return;
-
-        if (user != null) {
-          Navigator.pushReplacementNamed(context, '/support-dashboard');
-        }
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error de inicio de sesión: ${e.toString()}')),
-        );
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,172 +23,141 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.grey[100],
       body: Center(
         child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[900],
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Header negro con logo
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12),
                     ),
-                    padding: const EdgeInsets.all(16),
-                    width: double.infinity,
+                  ),
+                  child: Center(
                     child: Image.asset(
                       'assets/sena_logo.png',
-                      height: 120,
-                      width: 180,
-                      errorBuilder: (context, error, stackTrace) {
-                        print('Error loading image: $error');
-                        return Container(
-                          height: 120,
-                          width: 180,
-                          color: Colors.grey[800],
-                          child: const Icon(
-                            Icons.error_outline,
-                            color: Colors.white,
-                            size: 40,
-                          ),
-                        );
-                      },
+                      height: 140,
                     ),
                   ),
-                  Card(
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                ),
+                // Card principal
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(12),
                     ),
-                    margin: EdgeInsets.zero,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 24,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
                       ),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Iniciar Sesión - Mesa de Ayuda',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Mesa de ayuda',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
                           ),
-                          const SizedBox(height: 24),
-                          TextFormField(
-                            controller: _idController,
-                            decoration: const InputDecoration(
-                              hintText: 'Identificación',
-                              prefixIcon: Icon(Icons.person_outline),
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(8),
-                                ),
-                              ),
-                            ),
-                            keyboardType: TextInputType.number,
-                            validator: (value) =>
-                                value == null || value.isEmpty
-                                    ? 'Campo requerido'
-                                    : null,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          '¿Tienes algún problema técnico?',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            decoration: InputDecoration(
-                              hintText: 'Contraseña',
-                              prefixIcon: const Icon(Icons.lock_outline),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                ),
-                                onPressed: () => setState(
-                                  () => _obscurePassword = !_obscurePassword,
-                                ),
+                        ),
+                        const SizedBox(height: 32),
+                        // Botón Reportar Falla
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/ticket-form');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2196F3),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 26),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: const OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(8),
-                                ),
-                              ),
+                              elevation: 2,
                             ),
-                            validator: (value) =>
-                                value == null || value.isEmpty
-                                    ? 'Campo requerido'
-                                    : null,
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.cyan[600],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                foregroundColor: Colors.black,
-                              ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                  : const Text(
-                                      'Iniciar Sesión',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushNamed(context, '/ticket-form');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red[400],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                foregroundColor: Colors.black,
-                              ),
-                              child: const Text(
-                                'Reportar Falla',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                ),
+                            child: const Text(
+                              'REPORTAR FALLA',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'SENA Regional Guainía - Centro Ambiental y Ecoturístico del Nororiente Amazónico',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 32),
+                        const Divider(height: 1),
+                        const SizedBox(height: 32),
+                        // Sección Personal Técnico
+                        const Text(
+                          'Acceso para:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black54,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: 200,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/login');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE0F7F7),
+                              foregroundColor: Colors.black87,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              'Personal Técnico',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        // Footer
+                        const Text(
+                          'SENA Regional Guainía - Centro Ambiental y Ecoturístico del Nororiente Amazónico',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
