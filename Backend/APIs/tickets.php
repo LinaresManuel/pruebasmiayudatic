@@ -140,6 +140,10 @@ function updateTicket($ticketId, $data) {
         if (isset($data['fecha_cierre']) && $data['id_estado'] == 3) { // 3 = Cerrada
             $updateFields[] = "fecha_cierre = CURRENT_TIMESTAMP";
         }
+        if (isset($data['descripcion_solucion'])) {
+            $updateFields[] = "descripcion_solucion = ?";
+            $params[] = $data['descripcion_solucion'];
+        }
 
         if (empty($updateFields)) {
             writeLog("No hay campos para actualizar en el ticket ID: " . $ticketId, "tickets");
