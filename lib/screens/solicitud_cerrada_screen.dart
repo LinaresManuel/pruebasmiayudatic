@@ -263,6 +263,14 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                                   )
                                 ),
                                 DataColumn(
+                                  label: Text('Fecha de Cierre',
+                                    style: TextStyle(
+                                      fontSize: isSmallScreen ? 12 : 14,
+                                      fontWeight: FontWeight.bold
+                                    )
+                                  )
+                                ),
+                                DataColumn(
                                   label: Text('Acciones',
                                     style: TextStyle(
                                       fontSize: isSmallScreen ? 12 : 14,
@@ -344,6 +352,13 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                                       )
                                     ),
                                     DataCell(
+                                      ticket.fechaCierre != null
+                                        ? Text(DateFormat('dd/MM/yyyy').format(ticket.fechaCierre!),
+                                            style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                          )
+                                        : Text('-', style: TextStyle(fontSize: isSmallScreen ? 11 : 13)),
+                                    ),
+                                    DataCell(
                                       IconButton(
                                         icon: Icon(Icons.info, color: Colors.blue, size: isSmallScreen ? 18 : 24),
                                         onPressed: () => _showTicketDetails(ticket),
@@ -393,6 +408,12 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
               const Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text(ticket.descripcion),
+              if (ticket.descripcionSolucion != null && ticket.descripcionSolucion!.isNotEmpty) ...[
+                const Divider(),
+                const Text('Solución:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text(ticket.descripcionSolucion!),
+              ],
             ],
           ),
         ),

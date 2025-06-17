@@ -12,6 +12,7 @@ class Ticket {
   final String? personalAsignado;
   final DateTime? fechaCreacion;
   final DateTime? fechaCierre;
+  final String? descripcionSolucion;
 
   Ticket({
     this.id,
@@ -27,6 +28,7 @@ class Ticket {
     this.personalAsignado,
     this.fechaCreacion,
     this.fechaCierre,
+    this.descripcionSolucion,
   });
 
   factory Ticket.fromJson(Map<String, dynamic> json) {
@@ -48,6 +50,7 @@ class Ticket {
       fechaCierre: json['fecha_cierre'] != null 
         ? DateTime.parse(json['fecha_cierre'])
         : null,
+      descripcionSolucion: json['descripcion_solucion'],
     );
   }
 
@@ -60,6 +63,7 @@ class Ticket {
       'numero_contacto_solicitante': numeroContacto,
       'descripcion_solicitud': descripcion,
       'id_dependencia': int.parse(dependencia),
+      'descripcion_solucion': descripcionSolucion,
     };
   }
 
