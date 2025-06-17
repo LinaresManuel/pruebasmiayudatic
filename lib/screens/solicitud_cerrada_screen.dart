@@ -15,6 +15,7 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
   List<Ticket> _ticketsCerrados = [];
   bool _isLoading = true;
   String? _error;
+  bool _isAscending = true;
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
       final tickets = await _apiService.getTickets(estado: 3);
       setState(() {
         _ticketsCerrados = tickets;
+        _sortTicketsByDate();
       });
     } catch (e) {
       setState(() {
@@ -42,6 +44,22 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _sortTicketsByDate() {
+    setState(() {
+      _ticketsCerrados.sort((a, b) {
+        final comparison = a.fechaReporte.compareTo(b.fechaReporte);
+        return _isAscending ? comparison : -comparison;
+      });
+    });
+  }
+
+  void _toggleSortDirection() {
+    setState(() {
+      _isAscending = !_isAscending;
+      _sortTicketsByDate();
+    });
   }
 
   @override
@@ -109,17 +127,30 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: _loadTicketsCerrados,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Actualizar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.cyan[600],
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: _toggleSortDirection,
+                          icon: Icon(
+                            _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                            color: Colors.blue,
+                          ),
+                          tooltip: _isAscending ? 'Ordenar descendente' : 'Ordenar ascendente',
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: _loadTicketsCerrados,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Actualizar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.cyan[600],
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `tic_solicitudes` (
     `id_tipo_servicio` INT NULL, -- Puede ser NULL hasta que el personal de TI lo asigne
     `id_personal_ti_asignado` INT NULL, -- ID del usuario de TI asignado, NULL si no ha sido asignado
     `fecha_cierre` DATETIME NULL, -- Se llena al cerrar la solicitud
+    `descripcion_solucion` TEXT NULL, -- Descripción detallada de la solución implementada
 
     -- Claves Foráneas
     FOREIGN KEY (`id_dependencia`) REFERENCES `tic_dependencias`(`id_dependencia`),
