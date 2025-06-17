@@ -128,50 +128,49 @@ class _TicketFormScreenState extends State<TicketFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-      ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Cabecera con fondo y texto completo
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 0, 0, 0),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                                      child: Row(
+        child: Center(
+          child: Container(
+            width: double.infinity,
+            constraints: BoxConstraints(maxWidth: 1100),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Cabecera con fondo y texto completo
+                  Container(
+                    width: double.infinity,
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 0, 0, 0),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset('assets/sena_logo.png', height: 120),
-                        const SizedBox(width: 32),
+                        Image.asset('assets/sena_logo.png', height: 60),
+                        const SizedBox(width: 16),
                         const Expanded(
                           child: Center(
                             child: Text(
                               'SOPORTE TÉCNICO SENA REGIONAL GUAINÍA',
                               style: TextStyle(
-                                fontSize: 24,
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                                 height: 1.2,
@@ -181,178 +180,202 @@ class _TicketFormScreenState extends State<TicketFormScreen> {
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                ),
-                                    const SizedBox(height: 12),
-                  RichText(
-                    text: const TextSpan(
-                      style: TextStyle(fontSize: 18, color: Colors.black87),
-                      children: [
-                        TextSpan(
-                          text: 'Solicita tu ayuda TIC; llenando el formulario Web\n\n',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                        TextSpan(
-                          text: 'Horario de atención',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        TextSpan(
-                          text: '\nDe lunes a viernes de 07:00 am a 12:00 pm y de\n'
-                          '02:00 pm a 09:00 pm y sábados a partir de las\n'
-                          '07:00 am a 01:00 pm',
-                        ),
                       ],
                     ),
                   ),
-                const Divider(height: 32),
-                const Text(
-                  '* Obligatorio',
-                  style: TextStyle(color: Colors.red, fontSize: 13),
-                ),
-                const SizedBox(height: 16),
-                // Fecha reporte de caso
-                const Text(
-                  '1. Fecha reporte de caso *',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                InkWell(
-                  onTap: () => _selectDate(context),
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+                    decoration: BoxDecoration(
+                      color: Color(0xFFB2DFDB),
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '${_reportDate.day}/${_reportDate.month}/${_reportDate.year}',
+                          'Lunes a Viernes',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
-                        const Icon(Icons.calendar_today),
+                        SizedBox(height: 1),
+                        Text(
+                          '8:00 am - 6:00 pm',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 15,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Sábados',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        SizedBox(height: 1),
+                        Text(
+                          '8:00 am - 2:00 pm',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 15,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                // Nombres
-                const Text(
-                  '2. Nombres y Apellidos completos *',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Escriba su respuesta',
-                    border: OutlineInputBorder(),
+                  const Divider(height: 32),
+                  const Text(
+                    '* Obligatorio',
+                    style: TextStyle(color: Colors.red, fontSize: 13),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese sus nombres';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Correo
-                const Text(
-                  '3. Correo Institucional *',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    hintText: 'Escriba su respuesta',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 16),
+                  // Fecha reporte de caso
+                  const Text(
+                    '1. Fecha reporte de caso *',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su correo institucional';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Por favor ingrese un correo válido';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Dependencia
-                const Text(
-                  '4. Dependencia (Emprendimiento, formación, Bienestar, almacén, Grupo mixto, etc.) *',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                _loadingDependencies
-                  ? const Center(child: CircularProgressIndicator())
-                  : DropdownButtonFormField<String>(
-                      value: _selectedDependencyId,
+                  const SizedBox(height: 4),
+                  InkWell(
+                    onTap: () => _selectDate(context),
+                    child: InputDecorator(
                       decoration: const InputDecoration(
-                        hintText: 'Seleccione una dependencia',
                         border: OutlineInputBorder(),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
-                      items: _dependencies.map((dep) {
-                        return DropdownMenuItem(
-                          value: dep['id_dependencia'].toString(),
-                          child: Text(dep['nombre_dependencia']),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedDependencyId = newValue;
-                        });
-                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${_reportDate.day}/${_reportDate.month}/${_reportDate.year}',
+                          ),
+                          const Icon(Icons.calendar_today),
+                        ],
+                      ),
                     ),
-                const SizedBox(height: 16),
-                // Descripción
-                const Text(
-                  '5. Descripción detallada de la solicitud *',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _descriptionController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    hintText: 'Escriba su respuesta',
-                    border: OutlineInputBorder(),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese la descripción';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Número de contacto
-                const Text(
-                  '6. Número de contacto *',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: const InputDecoration(
-                    hintText: 'Escriba su respuesta',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 16),
+                  // Nombres
+                  const Text(
+                    '2. Nombres y Apellidos completos *',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor ingrese su número de contacto';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 28),
-                                  Row(
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      hintText: 'Escriba su respuesta',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese sus nombres';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Correo
+                  const Text(
+                    '3. Correo Institucional *',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      hintText: 'Escriba su respuesta',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese su correo institucional';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Por favor ingrese un correo válido';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Dependencia
+                  const Text(
+                    '4. Dependencia (Emprendimiento, formación, Bienestar, almacén, Grupo mixto, etc.) *',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  _loadingDependencies
+                      ? const Center(child: CircularProgressIndicator())
+                      : DropdownButtonFormField<String>(
+                          value: _selectedDependencyId,
+                          decoration: const InputDecoration(
+                            hintText: 'Seleccione una dependencia',
+                            border: OutlineInputBorder(),
+                          ),
+                          items: _dependencies.map((dep) {
+                            return DropdownMenuItem(
+                              value: dep['id_dependencia'].toString(),
+                              child: Text(dep['nombre_dependencia']),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedDependencyId = newValue;
+                            });
+                          },
+                        ),
+                  const SizedBox(height: 16),
+                  // Descripción
+                  const Text(
+                    '5. Descripción detallada de la solicitud *',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _descriptionController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      hintText: 'Escriba su respuesta',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese la descripción';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Número de contacto
+                  const Text(
+                    '6. Número de contacto *',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: const InputDecoration(
+                      hintText: 'Escriba su respuesta',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.phone,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese su número de contacto';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 28),
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       OutlinedButton(
@@ -362,7 +385,8 @@ class _TicketFormScreenState extends State<TicketFormScreen> {
                             vertical: 10,
                             horizontal: 24,
                           ),
-                          side: const BorderSide(color: Color.fromARGB(255, 4, 36, 21)),
+                          side: const BorderSide(
+                              color: Color.fromARGB(255, 4, 36, 21)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -378,7 +402,8 @@ class _TicketFormScreenState extends State<TicketFormScreen> {
                       ElevatedButton(
                         onPressed: _isLoading ? null : _submitForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 17, 120, 20),
+                          backgroundColor:
+                              const Color.fromARGB(255, 17, 120, 20),
                           padding: const EdgeInsets.symmetric(
                             vertical: 10,
                             horizontal: 24,
@@ -407,11 +432,12 @@ class _TicketFormScreenState extends State<TicketFormScreen> {
                       ),
                     ],
                   ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
-} 
+}
