@@ -89,7 +89,17 @@ class _TicketFormScreenState extends State<TicketFormScreen> {
           dependencia: _selectedDependencyId!,
         );
 
-        await _apiService.createTicket(ticket);
+        final ticketResponse = await _apiService.createTicket(ticket);
+
+        // Enviar correo de confirmación si el ticket se creó correctamente
+        if (ticketResponse['id_solicitud'] != null) {
+          await _apiService.enviarCorreoConfirmacion(
+            correoUsuario: ticketResponse['correo_usuario'],
+            fechaReporte: ticketResponse['fecha_reporte'],
+            idSolicitud: ticketResponse['id_solicitud'].toString(),
+            descripcion: ticketResponse['descripcion'],
+          );
+        }
 
         if (!mounted) return;
 

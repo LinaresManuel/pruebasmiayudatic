@@ -115,27 +115,51 @@ class ApiService {
     }
   }
 
-  Future<int> createTicket(Ticket ticket) async {
+  Future<Map<String, dynamic>> createTicket(Ticket ticket) async {
     try {
-      print('Creando ticket con datos: ${jsonEncode(ticket.toJson())}'); // Debug log
-      
+      print('Creando ticket con datos: \\${jsonEncode(ticket.toJson())}'); // Debug log
       final response = await http.post(
         Uri.parse('$baseUrl/tickets.php'),
         body: jsonEncode(ticket.toJson()),
         headers: {'Content-Type': 'application/json'},
       );
-
-      print('Respuesta del servidor: ${response.body}'); // Debug log
-
+      print('Respuesta del servidor: \\${response.body}'); // Debug log
       final data = jsonDecode(response.body);
       if (data['success'] == true && data['ticket_id'] != null) {
-        return int.parse(data['ticket_id'].toString());
+        // Devolver los datos necesarios para el correo
+        return {
+          'id_solicitud': data['ticket_id'],
+          'correo_usuario': ticket.correoSolicitante,
+          'fecha_reporte': ticket.fechaReporte.toIso8601String().split('T')[0],
+          'descripcion': ticket.descripcion,
+        };
       }
       throw Exception(data['error'] ?? 'Error al crear el ticket');
     } catch (e) {
-      print('Error en createTicket: $e'); // Debug log
-      throw Exception('Error al crear el ticket: $e');
+      print('Error en createTicket: \\${e}'); // Debug log
+      throw Exception('Error al crear el ticket: \\${e}');
     }
+  }
+
+  Future<bool> enviarCorreoConfirmacion({
+    required String correoUsuario,
+    required String fechaReporte,
+    required String idSolicitud,
+    required String descripcion,
+  }) async {
+    final url = Uri.parse('$baseUrl/enviar_correo.php');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'correo_usuario': correoUsuario,
+        'fecha_reporte': fechaReporte,
+        'id_solicitud': idSolicitud,
+        'descripcion': descripcion,
+      }),
+    );
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
   }
 
   Future<void> updateTicket(int id, Map<String, dynamic> updates) async {
