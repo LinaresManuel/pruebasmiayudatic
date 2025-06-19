@@ -25,9 +25,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      setState(() => _isLoading = true);
 
       try {
         final user = await _apiService.login(
@@ -47,9 +45,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
         );
       } finally {
         if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
+          setState(() => _isLoading = false);
         }
       }
     }
@@ -66,13 +62,12 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Header negro con logo
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.black,
-                    borderRadius: const BorderRadius.vertical(
+                    borderRadius: BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
                   ),
@@ -83,7 +78,6 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                     ),
                   ),
                 ),
-                // Contenido principal
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(32),
@@ -113,7 +107,6 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        // Campo de identificación
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -123,6 +116,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                           child: TextFormField(
                             controller: _identificationController,
                             keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.next,
                             decoration: InputDecoration(
                               hintText: 'Identificación',
                               prefixIcon: Icon(
@@ -144,7 +138,6 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Campo de contraseña
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -154,6 +147,8 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                           child: TextFormField(
                             controller: _passwordController,
                             obscureText: _obscureText,
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) => _handleLogin(),
                             decoration: InputDecoration(
                               hintText: 'Contraseña',
                               prefixIcon: Icon(
@@ -168,9 +163,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                                   color: Colors.grey[600],
                                 ),
                                 onPressed: () {
-                                  setState(() {
-                                    _obscureText = !_obscureText;
-                                  });
+                                  setState(() => _obscureText = !_obscureText);
                                 },
                               ),
                               border: InputBorder.none,
@@ -188,7 +181,6 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        // Botón de ingreso
                         SizedBox(
                           width: 140,
                           child: ElevatedButton(
@@ -226,7 +218,6 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        // Footer
                         const Text(
                           'SENA Regional Guainía - Centro Ambiental y Ecoturístico del Nororiente Amazónico',
                           textAlign: TextAlign.center,

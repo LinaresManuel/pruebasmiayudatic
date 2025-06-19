@@ -273,10 +273,6 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                   ),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.logout, color: Colors.white),
-                onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
-              ),
             ],
           ),
         ),
@@ -311,23 +307,26 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
             ListTile(
               leading: const Icon(Icons.assignment),
               title: const Text('Incidentes'),
+              selected: true,
+              selectedTileColor: Colors.cyan.withOpacity(0.1),
               onTap: () {
                 Navigator.pop(context);
               },
             ),
-                          ListTile(
-                leading: const Icon(Icons.check_circle),
-                title: const Text('Solicitudes Cerradas'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/solicitud-cerrada');
-                },
-              ),
             ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Estadisticas de Personal TIC'),
+              leading: const Icon(Icons.check_circle),
+              title: const Text('Solicitudes Cerradas'),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushNamed(context, '/solicitud-cerrada');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Estadísticas de Personal TIC'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/estadisticas-personal');
               },
             ),
             const Divider(),
@@ -336,6 +335,16 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
               title: const Text('Configuración'),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushNamed(context, '/configuracion');
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushReplacementNamed(context, '/');
               },
             ),
           ],
