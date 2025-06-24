@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/ticket_model.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
+import '../widgets/app_drawer.dart';
 
 class SolicitudCerradaScreen extends StatefulWidget {
   const SolicitudCerradaScreen({super.key});
@@ -16,6 +17,8 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
   bool _isLoading = true;
   String? _error;
   bool _isAscending = true;
+  int _currentPage = 0;
+  static const int _rowsPerPage = 10;
 
   @override
   void initState() {
@@ -64,66 +67,76 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 800;
+    final isMediumScreen = MediaQuery.of(context).size.width < 1200;
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 160,
+        toolbarHeight: isSmallScreen ? 80 : 160,
         backgroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        flexibleSpace: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            children: [
-              Image.asset(
-                'assets/sena_logo.png',
-                height: 120,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 120,
-                    height: 120,
-                    color: Colors.grey[800],
-                    child: const Icon(Icons.business, color: Colors.white),
-                  );
-                },
-              ),
-              const Expanded(
-                child: Center(
+        automaticallyImplyLeading: false,
+        flexibleSpace: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 16.0),
+            child: Row(
+              children: [
+                Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.white),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                ),
+                SizedBox(width: isSmallScreen ? 8 : 16),
+                Image.asset(
+                  'assets/sena_logo.png',
+                  height: isSmallScreen ? 40 : 120,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: isSmallScreen ? 40 : 120,
+                      height: isSmallScreen ? 40 : 120,
+                      color: Colors.grey[800],
+                      child: const Icon(Icons.business, color: Colors.white),
+                    );
+                  },
+                ),
+                SizedBox(width: isSmallScreen ? 8 : 16),
+                Expanded(
                   child: Text(
                     'Servicios TIC Sena Regional Guainía',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: isSmallScreen ? 15 : 20,
                       fontWeight: FontWeight.bold,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
-            ],
+                SizedBox(width: isSmallScreen ? 56 : 68),
+              ],
+            ),
           ),
         ),
       ),
+      drawer: const AppDrawer(currentRoute: '/solicitud-cerrada'),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '/ Inicio / Solicitudes Cerradas',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Solicitudes Cerradas',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: isSmallScreen ? 18 : 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -141,13 +154,14 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                         ElevatedButton.icon(
                           onPressed: _loadTicketsCerrados,
                           icon: const Icon(Icons.refresh),
-                          label: const Text('Actualizar'),
+                          label: isSmallScreen ? const SizedBox.shrink() : const Text('Actualizar'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.cyan[600],
                             foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
+                            shape: isSmallScreen ? const CircleBorder() : RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
+                            padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                           ),
                         ),
                       ],
@@ -166,214 +180,315 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
               ),
             ),
           if (_isLoading)
-            const Center(child: CircularProgressIndicator())
+            const Expanded(child: Center(child: CircularProgressIndicator()))
           else
             Expanded(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isSmallScreen = constraints.maxWidth < 800;
-                    final isMediumScreen = constraints.maxWidth < 1200;
-                    return Card(
-                      margin: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
-                      elevation: 6,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: SingleChildScrollView(
-                          child: Container(
-                            constraints: BoxConstraints(
-                              minWidth: isSmallScreen ? constraints.maxWidth : 800,
-                              maxWidth: isMediumScreen ? constraints.maxWidth : 1600,
-                            ),
-                            child: DataTable(
-                              headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
-                              columnSpacing: isSmallScreen ? 10 : 20,
-                              horizontalMargin: isSmallScreen ? 10 : 24,
-                              columns: [
-                                DataColumn(
-                                  label: Text('ID', 
-                                    style: TextStyle(
-                                      fontSize: isSmallScreen ? 12 : 14,
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  ), 
-                                  numeric: true
-                                ),
-                                if (!isSmallScreen) 
-                                  DataColumn(
-                                    label: Text('Fecha',
-                                      style: TextStyle(fontSize: isSmallScreen ? 12 : 14,
-                                      fontWeight: FontWeight.bold
-                                      )
-                                    )
-                                  ),
-                                DataColumn(
-                                  label: Text('Solicitante',
-                                    style: TextStyle(
-                                      fontSize: isSmallScreen ? 12 : 14,
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  )
-                                ),
-                                if (!isSmallScreen) 
-                                  DataColumn(
-                                    label: Text('Dependencia',
-                                      style: TextStyle(
-                                        fontSize: isSmallScreen ? 12 : 14,
-                                        fontWeight: FontWeight.bold
-                                      )
-                                    )
-                                  ),
-                                DataColumn(
-                                  label: Text('Descripción',
-                                    style: TextStyle(
-                                      fontSize: isSmallScreen ? 12 : 14,
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  ),
-                                  tooltip: 'Haz clic en el ícono de información para ver la descripción completa',
-                                ),
-                                DataColumn(
-                                  label: Text('Estado',
-                                    style: TextStyle(
-                                      fontSize: isSmallScreen ? 12 : 14,
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  )
-                                ),
-                                if (!isMediumScreen)
-                                  DataColumn(
-                                    label: Text('Tipo de Servicio',
-                                      style: TextStyle(
-                                        fontSize: isSmallScreen ? 12 : 14,
-                                        fontWeight: FontWeight.bold
-                                      )
-                                    )
-                                  ),
-                                DataColumn(
-                                  label: Text('Personal Asignado',
-                                    style: TextStyle(
-                                      fontSize: isSmallScreen ? 12 : 14,
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  )
-                                ),
-                                DataColumn(
-                                  label: Text('Fecha de Cierre',
-                                    style: TextStyle(
-                                      fontSize: isSmallScreen ? 12 : 14,
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  )
-                                ),
-                                DataColumn(
-                                  label: Text('Acciones',
-                                    style: TextStyle(
-                                      fontSize: isSmallScreen ? 12 : 14,
-                                      fontWeight: FontWeight.bold
-                                    )
-                                  )
-                                ),
-                              ],
-                              rows: _ticketsCerrados.map((ticket) {
-                                return DataRow(
-                                  cells: [
-                                    DataCell(
-                                      Text(
-                                        ticket.id.toString(),
-                                        style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                      )
-                                    ),
-                                    if (!isSmallScreen)
-                                      DataCell(
-                                        Text(
-                                          DateFormat('dd/MM/yyyy').format(ticket.fechaReporte),
-                                          style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                        )
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  if (isSmallScreen) {
+                    return ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      itemCount: _ticketsCerrados.length,
+                      itemBuilder: (context, index) {
+                        final ticket = _ticketsCerrados[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(14.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('ID: ${ticket.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                    DataCell(
-                                      Text(
-                                        '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}',
-                                        style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                      )
-                                    ),
-                                    if (!isSmallScreen)
-                                      DataCell(
-                                        Text(
-                                          ticket.dependencia,
-                                          style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                        )
-                                      ),
-                                    DataCell(
-                                      Container(
-                                        width: isSmallScreen ? 100 : 200,
-                                        child: Text(
-                                          ticket.descripcion,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                          style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: isSmallScreen ? 4 : 8, 
-                                          vertical: isSmallScreen ? 2 : 4
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.green,
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          ticket.estado ?? 'Cerrada',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: isSmallScreen ? 11 : 13
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    if (!isMediumScreen)
-                                      DataCell(
-                                        Text(
-                                          ticket.tipoServicio ?? '-',
-                                          style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                        )
-                                      ),
-                                    DataCell(
-                                      Text(
-                                        ticket.personalAsignado ?? '-',
-                                        style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                      )
-                                    ),
-                                    DataCell(
-                                      ticket.fechaCierre != null
-                                        ? Text(DateFormat('dd/MM/yyyy').format(ticket.fechaCierre!),
-                                            style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                          )
-                                        : Text('-', style: TextStyle(fontSize: isSmallScreen ? 11 : 13)),
-                                    ),
-                                    DataCell(
-                                      IconButton(
-                                        icon: Icon(Icons.info, color: Colors.blue, size: isSmallScreen ? 18 : 24),
-                                        onPressed: () => _showTicketDetails(ticket),
-                                      ),
+                                      child: const Text('Cerrada', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                                     ),
                                   ],
-                                );
-                              }).toList(),
+                                ),
+                                const SizedBox(height: 8),
+                                Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                                const SizedBox(height: 2),
+                                Text(ticket.dependencia, style: TextStyle(color: Colors.grey[700], fontSize: 13)),
+                                const SizedBox(height: 8),
+                                Text(ticket.descripcion, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    if (ticket.personalAsignado != null)
+                                      Flexible(
+                                        child: Chip(
+                                          avatar: const Icon(Icons.person, size: 16),
+                                          label: Text(ticket.personalAsignado!, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis),
+                                          backgroundColor: Colors.grey[200],
+                                        ),
+                                      )
+                                    else
+                                      const Text('Sin asignar', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                                    const Spacer(),
+                                    if (ticket.fechaCierre != null)
+                                      Text(DateFormat('dd/MM/yyyy').format(ticket.fechaCierre!), style: const TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    onPressed: () => _showTicketDetails(ticket),
+                                    icon: const Icon(Icons.info, color: Colors.blue, size: 18),
+                                    label: const Text('Detalles'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  // PAGINACIÓN: calcular el rango de tickets a mostrar
+                  final int startIndex = _currentPage * _rowsPerPage;
+                  final int endIndex = (_currentPage + 1) * _rowsPerPage;
+                  final List<Ticket> paginatedTickets = _ticketsCerrados.length > startIndex
+                      ? _ticketsCerrados.sublist(startIndex, endIndex > _ticketsCerrados.length ? _ticketsCerrados.length : endIndex)
+                      : [];
+                  final totalPages = (_ticketsCerrados.length / _rowsPerPage).ceil();
+                  Widget paginationControls = Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _currentPage > 0 ? () => setState(() => _currentPage--) : null,
+                        child: const Icon(Icons.chevron_left),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          'Página ${_currentPage + 1} de ${totalPages}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: endIndex < _ticketsCerrados.length ? () => setState(() => _currentPage++) : null,
+                        child: const Icon(Icons.chevron_right),
+                      ),
+                    ],
+                  );
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: Card(
+                          margin: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
+                          elevation: 6,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: SingleChildScrollView(
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  minWidth: isSmallScreen ? constraints.maxWidth : 800,
+                                  maxWidth: isMediumScreen ? constraints.maxWidth : 1600,
+                                ),
+                                child: DataTable(
+                                  headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
+                                  columnSpacing: isSmallScreen ? 10 : 20,
+                                  horizontalMargin: isSmallScreen ? 10 : 24,
+                                  columns: [
+                                    DataColumn(
+                                      label: Text('ID', 
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.bold
+                                        )
+                                      ), 
+                                      numeric: true
+                                    ),
+                                    if (!isSmallScreen) 
+                                      DataColumn(
+                                        label: Text('Fecha',
+                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.bold
+                                          )
+                                        )
+                                      ),
+                                    DataColumn(
+                                      label: Text('Solicitante',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.bold
+                                        )
+                                      )
+                                    ),
+                                    if (!isSmallScreen) 
+                                      DataColumn(
+                                        label: Text('Dependencia',
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                          )
+                                        )
+                                      ),
+                                    DataColumn(
+                                      label: Text('Descripción',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.bold
+                                        )
+                                      ),
+                                      tooltip: 'Haz clic en el ícono de información para ver la descripción completa',
+                                    ),
+                                    DataColumn(
+                                      label: Text('Estado',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.bold
+                                        )
+                                      )
+                                    ),
+                                    if (!isMediumScreen)
+                                      DataColumn(
+                                        label: Text('Tipo de Servicio',
+                                          style: TextStyle(
+                                            fontSize: isSmallScreen ? 12 : 14,
+                                            fontWeight: FontWeight.bold
+                                          )
+                                        )
+                                      ),
+                                    DataColumn(
+                                      label: Text('Personal Asignado',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.bold
+                                        )
+                                      )
+                                    ),
+                                    DataColumn(
+                                      label: Text('Fecha de Cierre',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.bold
+                                        )
+                                      )
+                                    ),
+                                    DataColumn(
+                                      label: Text('Acciones',
+                                        style: TextStyle(
+                                          fontSize: isSmallScreen ? 12 : 14,
+                                          fontWeight: FontWeight.bold
+                                        )
+                                      )
+                                    ),
+                                  ],
+                                  rows: paginatedTickets.map((ticket) {
+                                    return DataRow(
+                                      cells: [
+                                        DataCell(
+                                          Text(
+                                            ticket.id.toString(),
+                                            style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                          )
+                                        ),
+                                        if (!isSmallScreen)
+                                          DataCell(
+                                            Text(
+                                              DateFormat('dd/MM/yyyy').format(ticket.fechaReporte),
+                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                            )
+                                          ),
+                                        DataCell(
+                                          Text(
+                                            '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}',
+                                            style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                          )
+                                        ),
+                                        if (!isSmallScreen)
+                                          DataCell(
+                                            Text(
+                                              ticket.dependencia,
+                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                            )
+                                          ),
+                                        DataCell(
+                                          Container(
+                                            width: isSmallScreen ? 100 : 200,
+                                            child: Text(
+                                              ticket.descripcion,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                            ),
+                                          ),
+                                        ),
+                                        DataCell(
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: isSmallScreen ? 4 : 8, 
+                                              vertical: isSmallScreen ? 2 : 4
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              ticket.estado ?? 'Cerrada',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: isSmallScreen ? 11 : 13
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        if (!isMediumScreen)
+                                          DataCell(
+                                            Text(
+                                              ticket.tipoServicio ?? '-',
+                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                            )
+                                          ),
+                                        DataCell(
+                                          Text(
+                                            ticket.personalAsignado ?? '-',
+                                            style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                          )
+                                        ),
+                                        DataCell(
+                                          ticket.fechaCierre != null
+                                            ? Text(DateFormat('dd/MM/yyyy').format(ticket.fechaCierre!),
+                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
+                                              )
+                                            : Text('-', style: TextStyle(fontSize: isSmallScreen ? 11 : 13)),
+                                        ),
+                                        DataCell(
+                                          IconButton(
+                                            icon: Icon(Icons.info, color: Colors.blue, size: isSmallScreen ? 18 : 24),
+                                            onPressed: () => _showTicketDetails(ticket),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    );
-                  },
-                ),
+                      if (totalPages > 1) Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: paginationControls,
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
         ],

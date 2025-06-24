@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/ticket_model.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import './details_screen.dart';
+import '../widgets/app_drawer.dart';
 
 class SupportDashboardScreen extends StatefulWidget {
   const SupportDashboardScreen({super.key});
@@ -20,6 +22,8 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
   bool _isLoading = true;
   bool _loadingMasterData = true;
   String? _error;
+  int _currentPage = 0;
+  static const int _rowsPerPage = 10;
 
   @override
   void initState() {
@@ -126,6 +130,34 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
             ),
           ),
           actions: [
+            TextButton(
+              child: const Text('Copiar'),
+              onPressed: () {
+                final allDetails = StringBuffer()
+                  ..writeln('ID: ${details.id}')
+                  ..writeln('Fecha de Reporte: ${DateFormat('dd/MM/yyyy').format(details.fechaReporte)}')
+                  ..writeln('Solicitante: ${details.nombresSolicitante} ${details.apellidosSolicitante}')
+                  ..writeln('Correo: ${details.correoSolicitante}')
+                  ..writeln('Contacto: ${details.numeroContacto}')
+                  ..writeln('Dependencia: ${details.dependencia}')
+                  ..writeln('Estado: ${details.estado ?? 'No asignado'}')
+                  ..writeln('Tipo de Servicio: ${details.tipoServicio ?? 'No asignado'}')
+                  ..writeln('Personal Asignado: ${details.personalAsignado ?? 'No asignado'}');
+
+                if (details.fechaCreacion != null) {
+                  allDetails.writeln('Fecha de Creación: ${DateFormat('dd/MM/yyyy HH:mm').format(details.fechaCreacion!)}');
+                }
+                if (details.fechaCierre != null) {
+                  allDetails.writeln('Fecha de Cierre: ${DateFormat('dd/MM/yyyy HH:mm').format(details.fechaCierre!)}');
+                }
+                allDetails.writeln('Descripción: ${details.descripcion}');
+
+                Clipboard.setData(ClipboardData(text: allDetails.toString()));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Detalles copiados al portapapeles')),
+                );
+              },
+            ),
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cerrar'),
@@ -237,166 +269,171 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 160,
-        backgroundColor: Colors.black,
-        automaticallyImplyLeading: false,
-        flexibleSpace: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
+  Widget _buildMobileTicketCard(Ticket ticket, bool isSmallScreen) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(
+          context,
+          '/case-details',
+          arguments: {'caseId': ticket.id.toString()},
+        ),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                'assets/sena_logo.png',
-                height: 120,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 120,
-                    height: 120,
-                    color: Colors.grey[800],
-                    child: const Icon(Icons.business, color: Colors.white),
-                  );
-                },
-              ),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    'Servicios TIC Sena Regional Guainía',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('ID: ${ticket.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(ticket.estado),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: Text(ticket.estado ?? 'Abierta', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
-                ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${ticket.dependencia} • ${DateFormat('dd/MM/yyyy').format(ticket.fechaReporte)}',
+                style: TextStyle(color: Colors.grey[700], fontSize: 13),
+              ),
+              const Divider(height: 24),
+              Text(
+                ticket.descripcion,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (ticket.personalAsignado != null)
+                    Flexible(
+                      child: Chip(
+                        avatar: const Icon(Icons.person, size: 16),
+                        label: Text(ticket.personalAsignado!, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis,),
+                        backgroundColor: Colors.grey[200],
+                      ),
+                    )
+                  else
+                    const Text('Sin asignar', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                  
+                  TextButton(
+                    onPressed: () => _showTicketDetails(ticket),
+                    child: const Text('Ver Detalles'),
+                  )
+                ],
               ),
             ],
           ),
         ),
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Colors.black,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Image.asset(
-                    'assets/sena_logo.png',
-                    height: 80,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 800;
+    return Scaffold(
+      appBar: AppBar(
+        toolbarHeight: isSmallScreen ? 80 : 160,
+        backgroundColor: Colors.black,
+        automaticallyImplyLeading: false,
+        flexibleSpace: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 16.0),
+            child: Row(
+              children: [
+                Builder(
+                  builder: (context) => IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.white),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Menú de Servicios',
+                ),
+                SizedBox(width: isSmallScreen ? 8 : 16),
+                Image.asset(
+                  'assets/sena_logo.png',
+                  height: isSmallScreen ? 40 : 120,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: isSmallScreen ? 40 : 120,
+                      height: isSmallScreen ? 40 : 120,
+                      color: Colors.grey[800],
+                      child: const Icon(Icons.business, color: Colors.white),
+                    );
+                  },
+                ),
+                SizedBox(width: isSmallScreen ? 8 : 16),
+                // Si tienes el logo de miayudaTIC, descomenta la siguiente línea y pon la ruta correcta:
+                // Image.asset('assets/miayudatic_logo.png', height: isSmallScreen ? 40 : 120),
+                Expanded(
+                  child: Text(
+                    'Servicios TIC Sena Regional Guainía',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: isSmallScreen ? 15 : 20,
                       fontWeight: FontWeight.bold,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
+                ),
+                SizedBox(width: isSmallScreen ? 56 : 68),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.assignment),
-              title: const Text('Incidentes'),
-              selected: true,
-              selectedTileColor: Colors.cyan.withOpacity(0.1),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.check_circle),
-              title: const Text('Solicitudes Cerradas'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/solicitud-cerrada');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Estadísticas de Personal TIC'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/estadisticas-personal');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Configuración'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/configuracion');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushReplacementNamed(context, '/');
-              },
-            ),
-          ],
+          ),
         ),
       ),
+      drawer: const AppDrawer(currentRoute: '/support-dashboard'),
       body: _loadingMasterData
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         '/ Inicio / Consola de Servicios',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(fontSize: isSmallScreen ? 12 : 14, color: Colors.grey),
                       ),
                       const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Builder(
-                                builder: (context) => IconButton(
-                                  icon: const Icon(Icons.menu),
-                                  onPressed: () {
-                                    Scaffold.of(context).openDrawer();
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Gestión de Solicitudes',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                           Text(
+                            'Gestión de Solicitudes',
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 20 : 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           ElevatedButton.icon(
                             onPressed: _loadTickets,
                             icon: const Icon(Icons.refresh),
-                            label: const Text('Actualizar'),
+                            label: Text(isSmallScreen ? '' : 'Actualizar'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.cyan[600],
                               foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(
+                              shape: isSmallScreen ? const CircleBorder() : RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
+                              padding: EdgeInsets.all(isSmallScreen ? 12 : 16)
                             ),
                           ),
                         ],
@@ -413,258 +450,193 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                     ),
                   ),
                 if (_isLoading)
-                  const Center(child: CircularProgressIndicator())
+                  const Expanded(child: Center(child: CircularProgressIndicator()))
                 else
                   Expanded(
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isSmallScreen = constraints.maxWidth < 800;
-                          final isMediumScreen = constraints.maxWidth < 1200;
-                          
-                          return Card(
-                            margin: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
-                            elevation: 6,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isLayoutSmall = constraints.maxWidth < 800;
+                        final isLayoutMedium = constraints.maxWidth < 1200;
+                        
+                        // PAGINACIÓN: calcular el rango de tickets a mostrar
+                        final int startIndex = _currentPage * _rowsPerPage;
+                        final int endIndex = (_currentPage + 1) * _rowsPerPage;
+                        final List<Ticket> paginatedTickets = _tickets.length > startIndex
+                            ? _tickets.sublist(startIndex, endIndex > _tickets.length ? _tickets.length : endIndex)
+                            : [];
+
+                        final totalPages = (_tickets.length / _rowsPerPage).ceil();
+
+                        Widget paginationControls = Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: _currentPage > 0 ? () => setState(() => _currentPage--) : null,
+                              child: const Icon(Icons.chevron_left),
                             ),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: SingleChildScrollView(
-                                child: Container(
-                                  constraints: BoxConstraints(
-                                    minWidth: isSmallScreen ? constraints.maxWidth : 800,
-                                    maxWidth: isMediumScreen ? constraints.maxWidth : 1600,
-                                  ),
-                                  child: DataTable(
-                                    headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
-                                    columnSpacing: isSmallScreen ? 10 : 20,
-                                    horizontalMargin: isSmallScreen ? 10 : 24,
-                                    columns: [
-                                      DataColumn(
-                                        label: Text('ID', 
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                          )
-                                        ), 
-                                        numeric: true
-                                      ),
-                                      if (!isSmallScreen) 
-                                        DataColumn(
-                                          label: Text('Fecha',
-                                            style: TextStyle(fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                            )
-                                          )
-                                        ),
-                                      DataColumn(
-                                        label: Text('Solicitante',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                          )
-                                        )
-                                      ),
-                                      if (!isSmallScreen) 
-                                        DataColumn(
-                                          label: Text('Dependencia',
-                                            style: TextStyle(
-                                              fontSize: isSmallScreen ? 12 : 14,
-                                              fontWeight: FontWeight.bold
-                                            )
-                                          )
-                                        ),
-                                      DataColumn(
-                                        label: Text('Descripción',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                          )
-                                        ),
-                                        tooltip: 'Haz clic en el ícono de información para ver la descripción completa',
-                                      ),
-                                      DataColumn(
-                                        label: Text('Estado',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                          )
-                                        )
-                                      ),
-                                      if (!isMediumScreen)
-                                        DataColumn(
-                                          label: Text('Tipo de Servicio',
-                                            style: TextStyle(
-                                              fontSize: isSmallScreen ? 12 : 14,
-                                              fontWeight: FontWeight.bold
-                                            )
-                                          )
-                                        ),
-                                      DataColumn(
-                                        label: Text('Personal Asignado',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                          )
-                                        )
-                                      ),
-                                      DataColumn(
-                                        label: Text('Acciones',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                          )
-                                        )
-                                      ),
-                                    ],
-                                    rows: _tickets.map((ticket) {
-                                      return DataRow(
-                                        cells: [
-                                          DataCell(
-                                            Text(
-                                              ticket.id.toString(),
-                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                            )
-                                          ),
-                                          if (!isSmallScreen)
-                                            DataCell(
-                                              Text(
-                                                DateFormat('dd/MM/yyyy').format(ticket.fechaReporte),
-                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                              )
-                                            ),
-                                          DataCell(
-                                            Text(
-                                              '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}',
-                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                            )
-                                          ),
-                                          if (!isSmallScreen)
-                                            DataCell(
-                                              Text(
-                                                ticket.dependencia,
-                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                              )
-                                            ),
-                                          DataCell(
-                                            Container(
-                                              width: isSmallScreen ? 100 : 200,
-                                              child: Text(
-                                                ticket.descripcion,
-                                                overflow: TextOverflow.ellipsis,
-                                                maxLines: 1,
-                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                              ),
-                                            ),
-                                          ),
-                                          DataCell(
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: isSmallScreen ? 4 : 8, 
-                                                vertical: isSmallScreen ? 2 : 4
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: _getStatusColor(ticket.estado),
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                ticket.estado ?? 'Abierta',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: isSmallScreen ? 11 : 13
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          if (!isMediumScreen)
-                                            DataCell(
-                                              DropdownButton<String>(
-                                                value: ticket.tipoServicio,
-                                                hint: Text(
-                                                  'Seleccionar',
-                                                  style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                                ),
-                                                items: _serviceTypes.map((type) {
-                                                  return DropdownMenuItem<String>(
-                                                    value: type['nombre_tipo_servicio'],
-                                                    child: Text(
-                                                      type['nombre_tipo_servicio'],
-                                                      style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                                onChanged: ticket.estado != 'Cerrada'
-                                                    ? (String? newValue) {
-                                                        _assignTicket(ticket, newValue, null);
-                                                      }
-                                                    : null,
-                                              ),
-                                            ),
-                                          DataCell(
-                                            DropdownButton<String>(
-                                              value: ticket.personalAsignado,
-                                              hint: Text(
-                                                'Asignar',
-                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                              ),
-                                              items: _supportStaff.map((staff) {
-                                                return DropdownMenuItem<String>(
-                                                  value: staff['nombre_completo'],
-                                                  child: Text(
-                                                    staff['nombre_completo'],
-                                                    style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                                  ),
-                                                );
-                                              }).toList(),
-                                              onChanged: ticket.estado != 'Cerrada'
-                                                  ? (String? newValue) {
-                                                      _assignTicket(ticket, null, newValue);
-                                                    }
-                                                  : null,
-                                            ),
-                                          ),
-                                          DataCell(
-                                            Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                IconButton(
-                                                  icon: Icon(
-                                                    Icons.info,
-                                                    size: isSmallScreen ? 18 : 24,
-                                                  ),
-                                                  onPressed: () => _showTicketDetails(ticket),
-                                                  color: Colors.blue,
-                                                ),
-                                                if (ticket.estado != 'Cerrada')
-                                                  IconButton(
-                                                    icon: Icon(
-                                                      Icons.check_circle,
-                                                      size: isSmallScreen ? 18 : 24,
-                                                    ),
-                                                    onPressed: () => Navigator.pushNamed(
-                                                      context,
-                                                      '/case-details',
-                                                      arguments: {
-                                                        'caseId': ticket.id.toString(),
-                                                      },
-                                                    ),
-                                                    color: Colors.green,
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                              child: Text(
+                                'Página ${_currentPage + 1} de $totalPages',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: endIndex < _tickets.length ? () => setState(() => _currentPage++) : null,
+                              child: const Icon(Icons.chevron_right),
+                            ),
+                          ],
+                        );
+
+                        if (isLayoutSmall) {
+                          return Column(
+                            children: [
+                              Expanded(
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  itemCount: paginatedTickets.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildMobileTicketCard(paginatedTickets[index], isLayoutSmall);
+                                  },
+                                ),
+                              ),
+                              if (totalPages > 1) Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: paginationControls,
+                              )
+                            ],
+                          );
+                        }
+                        
+                        // VISTA DE TABLA PARA ESCRITORIO
+                        return Column(
+                          children: [
+                            Expanded(
+                              child: Card(
+                                margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                                elevation: 6,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.vertical,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                                      child: DataTable(
+                                        headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
+                                        columnSpacing: isLayoutSmall ? 10 : 20,
+                                        horizontalMargin: isLayoutSmall ? 10 : 24,
+                                        columns: [
+                                          const DataColumn(label: Text('ID', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
+                                          if (!isLayoutSmall) const DataColumn(label: Text('Fecha', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          const DataColumn(label: Text('Solicitante', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          if (!isLayoutSmall) const DataColumn(label: Text('Dependencia', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          const DataColumn(label: Text('Descripción', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          const DataColumn(label: Text('Estado', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          if (!isLayoutMedium) const DataColumn(label: Text('Tipo de Servicio', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          const DataColumn(label: Text('Personal Asignado', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          const DataColumn(label: Text('Acciones', style: TextStyle(fontWeight: FontWeight.bold))),
                                         ],
-                                      );
-                                    }).toList(),
+                                        rows: paginatedTickets.map((ticket) {
+                                          return DataRow(
+                                            cells: [
+                                              DataCell(Text(ticket.id.toString())),
+                                              if (!isLayoutSmall) DataCell(Text(DateFormat('dd/MM/yyyy').format(ticket.fechaReporte))),
+                                              DataCell(Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}')),
+                                              if (!isLayoutSmall) DataCell(Text(ticket.dependencia)),
+                                              DataCell(
+                                                SizedBox(
+                                                  width: isLayoutSmall ? 100 : 200,
+                                                  child: Text(
+                                                    ticket.descripcion,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: _getStatusColor(ticket.estado),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: Text(
+                                                    ticket.estado ?? 'Abierta',
+                                                    style: const TextStyle(color: Colors.white),
+                                                  ),
+                                                ),
+                                              ),
+                                              if (!isLayoutMedium)
+                                                DataCell(
+                                                  DropdownButton<String>(
+                                                    value: ticket.tipoServicio,
+                                                    hint: const Text('Seleccionar'),
+                                                    items: _serviceTypes.map((type) {
+                                                      return DropdownMenuItem<String>(
+                                                        value: type['nombre_tipo_servicio'],
+                                                        child: Text(type['nombre_tipo_servicio']),
+                                                      );
+                                                    }).toList(),
+                                                    onChanged: ticket.estado != 'Cerrada' ? (String? newValue) => _assignTicket(ticket, newValue, null) : null,
+                                                  ),
+                                                ),
+                                              DataCell(
+                                                DropdownButton<String>(
+                                                  value: ticket.personalAsignado,
+                                                  hint: const Text('Asignar'),
+                                                  items: _supportStaff.map((staff) {
+                                                    return DropdownMenuItem<String>(
+                                                      value: staff['nombre_completo'],
+                                                      child: Text(staff['nombre_completo']),
+                                                    );
+                                                  }).toList(),
+                                                  onChanged: ticket.estado != 'Cerrada' ? (String? newValue) => _assignTicket(ticket, null, newValue) : null,
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    IconButton(
+                                                      icon: const Icon(Icons.info),
+                                                      onPressed: () => _showTicketDetails(ticket),
+                                                      color: Colors.blue,
+                                                      tooltip: 'Ver detalles completos',
+                                                    ),
+                                                    if (ticket.estado != 'Cerrada')
+                                                      IconButton(
+                                                        icon: const Icon(Icons.check_circle),
+                                                        onPressed: () => Navigator.pushNamed(
+                                                          context,
+                                                          '/case-details',
+                                                          arguments: {'caseId': ticket.id.toString()},
+                                                        ),
+                                                        color: Colors.green,
+                                                        tooltip: 'Cerrar caso',
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
+                             if (totalPages > 1) Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: paginationControls,
+                              )
+                          ],
+                        );
+                      },
                     ),
                   ),
               ],

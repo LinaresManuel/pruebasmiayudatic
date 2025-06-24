@@ -200,19 +200,16 @@ class _DetailsScreenState extends State<DetailsScreen> {
 
   Future<void> _processClosure() async {
     try {
-      final updates = {
-        'id_estado': 3, // Estado "Cerrada"
-        'fecha_cierre': DateTime.now().toIso8601String(),
-        'descripcion_solucion': _descripcionSolucionController.text,
-      };
-
-      await _apiService.updateTicket(_ticketDetails!.id!, updates);
+      await _apiService.cerrarCasoYEnviarCorreo(
+        idSolicitud: _ticketDetails!.id!,
+        descripcionSolucion: _descripcionSolucionController.text,
+      );
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Caso cerrado exitosamente'),
+          content: Text('Caso cerrado y correos enviados exitosamente'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -324,28 +321,133 @@ class _DetailsScreenState extends State<DetailsScreen> {
                               ),
                               const Divider(height: 20),
                               if (_ticketDetails != null) ...[
-                                _infoRow(
-                                    'Fecha de Reporte:',
-                                    DateFormat('dd/MM/yyyy HH:mm')
-                                        .format(_ticketDetails!.fechaReporte)),
-                                _infoRow('Solicitante:',
-                                    '${_ticketDetails!.nombresSolicitante} ${_ticketDetails!.apellidosSolicitante}'),
-                                _infoRow('Correo:',
-                                    _ticketDetails!.correoSolicitante),
-                                _infoRow('Contacto:',
-                                    _ticketDetails!.numeroContacto),
-                                _infoRow('Dependencia:',
-                                    _ticketDetails!.dependencia),
-                                _infoRow('Descripción:',
-                                    _ticketDetails!.descripcion),
-                                _infoRow('Estado:',
-                                    _ticketDetails!.estado ?? 'No asignado'),
-                                if (_ticketDetails!.tipoServicio != null)
-                                  _infoRow('Tipo de Servicio:',
-                                      _ticketDetails!.tipoServicio!),
-                                if (_ticketDetails!.personalAsignado != null)
-                                  _infoRow('Personal Asignado:',
-                                      _ticketDetails!.personalAsignado!),
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final isMobile = constraints.maxWidth < 700;
+                                    if (isMobile) {
+                                      // Vista vertical tipo ficha/tabla para móvil
+                                      return Table(
+                                        columnWidths: const {
+                                          0: IntrinsicColumnWidth(),
+                                          1: FlexColumnWidth(),
+                                        },
+                                        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                                        children: [
+                                          TableRow(children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                              child: Text('Fecha de Reporte:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Text(DateFormat('dd/MM/yyyy HH:mm').format(_ticketDetails!.fechaReporte)),
+                                            ),
+                                          ]),
+                                          TableRow(children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                              child: Text('Solicitante:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Text('${_ticketDetails!.nombresSolicitante} ${_ticketDetails!.apellidosSolicitante}'),
+                                            ),
+                                          ]),
+                                          TableRow(children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                              child: Text('Correo:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Text(_ticketDetails!.correoSolicitante),
+                                            ),
+                                          ]),
+                                          TableRow(children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                              child: Text('Contacto:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Text(_ticketDetails!.numeroContacto),
+                                            ),
+                                          ]),
+                                          TableRow(children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                              child: Text('Dependencia:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Text(_ticketDetails!.dependencia),
+                                            ),
+                                          ]),
+                                          TableRow(children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                              child: Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Text(_ticketDetails!.descripcion),
+                                            ),
+                                          ]),
+                                          TableRow(children: [
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                              child: Text('Estado:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Text(_ticketDetails!.estado ?? 'No asignado'),
+                                            ),
+                                          ]),
+                                          if (_ticketDetails!.tipoServicio != null)
+                                            TableRow(children: [
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(vertical: 4),
+                                                child: Text('Tipo de Servicio:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                                child: Text(_ticketDetails!.tipoServicio!),
+                                              ),
+                                            ]),
+                                          if (_ticketDetails!.personalAsignado != null)
+                                            TableRow(children: [
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(vertical: 4),
+                                                child: Text('Personal Asignado:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                                child: Text(_ticketDetails!.personalAsignado!),
+                                              ),
+                                            ]),
+                                        ],
+                                      );
+                                    } else {
+                                      // Vista horizontal (actual) para escritorio
+                                      return Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(child: _infoColumn('Fecha de Reporte', DateFormat('dd/MM/yyyy HH:mm').format(_ticketDetails!.fechaReporte))),
+                                          Expanded(child: _infoColumn('Solicitante', '${_ticketDetails!.nombresSolicitante} ${_ticketDetails!.apellidosSolicitante}')),
+                                          Expanded(child: _infoColumn('Correo', _ticketDetails!.correoSolicitante)),
+                                          Expanded(child: _infoColumn('Contacto', _ticketDetails!.numeroContacto)),
+                                          Expanded(child: _infoColumn('Dependencia', _ticketDetails!.dependencia)),
+                                          Expanded(child: _infoColumn('Descripción', _ticketDetails!.descripcion)),
+                                          Expanded(child: _infoColumn('Estado', _ticketDetails!.estado ?? 'No asignado')),
+                                          if (_ticketDetails!.tipoServicio != null)
+                                            Expanded(child: _infoColumn('Tipo de Servicio', _ticketDetails!.tipoServicio!)),
+                                          if (_ticketDetails!.personalAsignado != null)
+                                            Expanded(child: _infoColumn('Personal Asignado', _ticketDetails!.personalAsignado!)),
+                                        ],
+                                      );
+                                    }
+                                  },
+                                ),
                               ],
                             ],
                           ),
@@ -444,58 +546,65 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 ],
                               ),
                               const SizedBox(height: 24),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  OutlinedButton.icon(
-                                    onPressed: () {
-                                      if (Navigator.of(context).canPop()) {
-                                        Navigator.of(context).pop();
-                                      } else {
-                                        Navigator.pushReplacementNamed(
-                                            context, '/support-dashboard');
-                                      }
-                                    },
-                                    icon: const Icon(Icons.cancel),
-                                    label: const Text('Cancelar'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.red,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  OutlinedButton.icon(
-                                    onPressed: () {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                              'Borrador guardado (simulado)!'),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      OutlinedButton.icon(
+                                        onPressed: () {
+                                          if (Navigator.of(context).canPop()) {
+                                            Navigator.of(context).pop();
+                                          } else {
+                                            Navigator.pushReplacementNamed(
+                                                context, '/support-dashboard');
+                                          }
+                                        },
+                                        icon: const Icon(Icons.cancel),
+                                        label: const Text('Cancelar'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.red,
                                         ),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.save_alt),
-                                    label: const Text('Guardar Borrador'),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.teal,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  ElevatedButton.icon(
-                                    onPressed: _showConfirmationDialog,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.teal,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 12,
                                       ),
-                                    ),
-                                    icon: const Icon(Icons.check_circle,
-                                        color: Colors.white),
-                                    label: const Text(
-                                      'Cerrar Caso',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
+                                      const SizedBox(width: 12),
+                                      OutlinedButton.icon(
+                                        onPressed: () {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Borrador guardado (simulado)!'),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.save_alt),
+                                        label: const Text('Guardar Borrador'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.teal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Center(
+                                    child: ElevatedButton.icon(
+                                      onPressed: _showConfirmationDialog,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.teal,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 12,
+                                        ),
+                                      ),
+                                      icon: const Icon(Icons.check_circle,
+                                          color: Colors.white),
+                                      label: const Text(
+                                        'Cerrar Caso',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -519,19 +628,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _infoColumn(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$label ',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          Expanded(
-            child: Text(value),
-          ),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          Text(value, style: const TextStyle(fontSize: 12)),
         ],
       ),
     );

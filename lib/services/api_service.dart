@@ -231,4 +231,25 @@ class ApiService {
       throw Exception('Error al obtener las solicitudes cerradas: $e');
     }
   }
+
+  Future<bool> cerrarCasoYEnviarCorreo({
+    required int idSolicitud,
+    required String descripcionSolucion,
+  }) async {
+    final url = Uri.parse('$baseUrl/cerrar_caso_y_enviar_correo.php');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'id_solicitud': idSolicitud,
+        'descripcion_solucion': descripcionSolucion,
+      }),
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) {
+      return true;
+    } else {
+      throw Exception(data['message'] ?? 'Error al cerrar el caso y enviar correo');
+    }
+  }
 } 

@@ -181,41 +181,71 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        SizedBox(
-                          width: 140,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _handleLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE0F7F7),
-                              foregroundColor: Colors.black87,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                                horizontal: 24,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Ingresar',
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 140,
+                              child: OutlinedButton(
+                                onPressed: _isLoading ? null : () => Navigator.pushNamed(context, '/'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.grey[800],
+                                  side: BorderSide(color: Colors.grey.shade300),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 24,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Cancelar',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  Icons.arrow_forward,
-                                  size: 20,
-                                  color: Colors.grey[800],
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 16),
+                            SizedBox(
+                              width: 140,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _handleLogin,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE0F7F7),
+                                  foregroundColor: Colors.black87,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 24,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'Ingresar',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      Icons.arrow_forward,
+                                      size: 20,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 32),
                         const Text(
