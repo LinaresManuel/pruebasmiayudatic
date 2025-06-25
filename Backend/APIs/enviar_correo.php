@@ -45,10 +45,11 @@ try {
 
     // Contenido del correo
     $mail->isHTML(true);
-    $mail->Subject = 'Confirmación de soporte solicitado - MiAyudaTic';
+    $mail->Subject = 'Confirmación de soporte solicitado - Mi Ayuda Tic Regional Guainía';
     $mail->Body    = "
         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
             <div style='text-align: center; margin-bottom: 30px;'>
+                <img src='https://ducjin.space/miayudatic/assets/sena_logo.png' alt='Logo SENA' style='height: 80px; margin-bottom: 10px;' />
                 <h2 style='color: #2c3e50; margin-bottom: 20px;'>¡Tu solicitud de soporte ha sido registrada!</h2>
             </div>
             

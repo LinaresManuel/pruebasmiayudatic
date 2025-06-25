@@ -43,6 +43,20 @@ function getSupportStaff() {
     }
 }
 
+function getRoles() {
+    global $conn;
+    try {
+        $stmt = $conn->query("SELECT id_rol, nombre_rol FROM tic_roles ORDER BY nombre_rol");
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        writeLog("Obteniendo roles: " . count($result) . " registros encontrados", "master_data");
+        return $result;
+    } catch(PDOException $e) {
+        writeLog("Error al obtener roles: " . $e->getMessage(), "master_data");
+        http_response_code(500);
+        return ['error' => $e->getMessage()];
+    }
+}
+
 $action = $_GET['action'] ?? '';
 writeLog("Acción solicitada: " . $action, "master_data");
 
@@ -55,6 +69,9 @@ switch($action) {
         break;
     case 'support-staff':
         echo json_encode(getSupportStaff());
+        break;
+    case 'roles':
+        echo json_encode(getRoles());
         break;
     default:
         writeLog("Acción inválida solicitada: " . $action, "master_data");

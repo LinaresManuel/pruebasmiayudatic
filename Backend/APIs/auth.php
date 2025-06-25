@@ -18,10 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     writeLog("Intentando login con usuario: $username", 'auth');
 
     try {
-        $stmt = $conn->prepare("SELECT id_usuario as id, nombre, cedula, r.nombre_rol as rol, password_hash as password 
+        $stmt = $conn->prepare("SELECT u.id_usuario as id, u.nombre, u.apellido, u.cedula, u.correo_electronico, r.nombre_rol as rol, u.fecha_creacion, u.ultima_sesion, u.password_hash as password 
                                FROM tic_usuarios u 
                                JOIN tic_roles r ON u.id_rol = r.id_rol 
-                               WHERE correo_electronico = ?");
+                               WHERE u.correo_electronico = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         

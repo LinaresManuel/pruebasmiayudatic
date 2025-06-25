@@ -90,13 +90,34 @@ try {
     $mail->Subject = 'Cierre de caso - MiAyudaTic';
     $mail->Body    = "
         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
-            <h2 style='color: #2c3e50;'>El caso N° {$id_solicitud} ha sido cerrado</h2>
-            <p><strong>Solicitante:</strong> {$row['nombres_solicitante']} {$row['apellidos_solicitante']}</p>
-            <p><strong>Fecha de reporte:</strong> {$row['fecha_reporte']}</p>
-            <p><strong>Descripción de la solicitud:</strong> {$row['descripcion_solicitud']}</p>
-            <p><strong>Solución registrada:</strong> {$descripcion_solucion}</p>
-            <br>
-            <p>Gracias por usar MiAyudaTic - SENA Regional Guainía.</p>
+            <div style='text-align: center; margin-bottom: 30px;'>
+                <img src='https://ducjin.space/miayudatic/assets/sena_logo.png' alt='Logo SENA' style='height: 80px; margin-bottom: 10px;' />
+                <h2 style='color: #2c3e50; margin-bottom: 20px;'>Ticket N° {$id_solicitud} ha sido cerrado</h2>
+            </div>
+            <table style='width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+                <tr>
+                    <td style='padding: 15px; border-bottom: 1px solid #e0e0e0; background-color: #f8f9fa; font-weight: bold; width: 40%;'>Solicitante:</td>
+                    <td style='padding: 15px; border-bottom: 1px solid #e0e0e0;'>{$row['nombres_solicitante']} {$row['apellidos_solicitante']}</td>
+                </tr>
+                <tr>
+                    <td style='padding: 15px; border-bottom: 1px solid #e0e0e0; background-color: #f8f9fa; font-weight: bold;'>Fecha de reporte:</td>
+                    <td style='padding: 15px; border-bottom: 1px solid #e0e0e0;'>{$row['fecha_reporte']}</td>
+                </tr>
+                <tr>
+                    <td style='padding: 15px; border-bottom: 1px solid #e0e0e0; background-color: #f8f9fa; font-weight: bold;'>Descripción de la solicitud:</td>
+                    <td style='padding: 15px; border-bottom: 1px solid #e0e0e0;'>{$row['descripcion_solicitud']}</td>
+                </tr>
+                <tr>
+                    <td style='padding: 15px; background-color: #f8f9fa; font-weight: bold;'>Solución registrada:</td>
+                    <td style='padding: 15px;'>{$descripcion_solucion}</td>
+                </tr>
+            </table>
+            <div style='background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;'>
+                <p style='margin: 0; color: #2c3e50;'>Gracias por usar MiAyudaTic - SENA Regional Guainía.</p>
+            </div>
+            <div style='text-align: center; padding-top: 20px; border-top: 1px solid #e0e0e0;'>
+                <p style='color: #2c3e50; font-weight: bold; margin: 0;'>MiAyudaTic - SENA Regional Guainía</p>
+            </div>
         </div>
     ";
 

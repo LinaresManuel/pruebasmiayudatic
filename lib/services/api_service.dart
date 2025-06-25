@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 import '../models/ticket_model.dart';
+import '../models/staff_page.dart';
 
 class ApiService {
   static const String baseUrl = 'https://ducjin.space/miayudatic';
@@ -69,6 +70,15 @@ class ApiService {
     } catch (e) {
       throw Exception('Error de conexión: $e');
     }
+  }
+
+  Future<List<Map<String, dynamic>>> getRoles() async {
+    final response = await http.get(Uri.parse('$baseUrl/master_data.php?action=roles'));
+    final data = jsonDecode(response.body);
+    if (data is List) {
+      return List<Map<String, dynamic>>.from(data);
+    }
+    throw Exception('Error al obtener los roles');
   }
 
   // Tickets API
@@ -188,17 +198,24 @@ class ApiService {
   }
 
   // Staff API
-  Future<List<User>> getAllStaff() async {
-    try {
-      final response = await http.get(Uri.parse('$baseUrl/staff.php'));
-      final data = jsonDecode(response.body);
-      
-      if (data is List) {
-        return data.map((json) => User.fromJson(json)).toList();
-      }
-      throw Exception('Error al obtener el personal');
-    } catch (e) {
-      throw Exception('Error de conexión: $e');
+  Future<StaffPage> getStaffPage({String cedula = '', int page = 1, int perPage = 10}) async {
+    final uri = Uri.parse('$baseUrl/staff.php')
+        .replace(queryParameters: {
+          if (cedula.isNotEmpty) 'cedula': cedula,
+          'page': page.toString(),
+          'perPage': perPage.toString(),
+        });
+    final response = await http.get(uri);
+    final resp = jsonDecode(response.body);
+    if (resp['success'] == true && resp['data'] != null) {
+      return StaffPage(
+        data: (resp['data'] as List).map((e) => User.fromJson(e)).toList(),
+        total: resp['total'] ?? 0,
+        page: resp['page'] ?? 1,
+        perPage: resp['perPage'] ?? perPage,
+      );
+    } else {
+      throw Exception(resp['error'] ?? 'Error al obtener el personal TIC');
     }
   }
 
@@ -215,7 +232,7 @@ class ApiService {
       throw Exception('Error de conexión: $e');
     }
   }
-// nueva
+
   Future<List<Ticket>> getClosedTickets() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/tickets.php?estado=cerrada'));
@@ -250,6 +267,58 @@ class ApiService {
       return true;
     } else {
       throw Exception(data['message'] ?? 'Error al cerrar el caso y enviar correo');
+    }
+  }
+
+  Future<User> createStaffMember(Map<String, dynamic> data) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/staff.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(data),
+    );
+    final resp = jsonDecode(response.body);
+    if (resp['success'] == true && resp['id'] != null) {
+      return getStaffMember(resp['id']);
+    } else {
+      throw Exception(resp['error'] ?? 'Error al crear el personal');
+    }
+  }
+
+  Future<User> updateStaffMember(int id, Map<String, dynamic> data) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/staff.php?id=$id'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(data),
+    );
+    final resp = jsonDecode(response.body);
+    if (resp['success'] == true) {
+      return getStaffMember(id);
+    } else {
+      throw Exception(resp['error'] ?? 'Error al actualizar el personal');
+    }
+  }
+
+  Future<void> deleteStaffMember(int id) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/staff.php?id=$id'),
+    );
+    final resp = jsonDecode(response.body);
+    if (resp['success'] != true) {
+      throw Exception(resp['error'] ?? 'Error al eliminar el personal');
+    }
+  }
+
+  Future<String> generatePasswordHash(String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/generate_hash.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'password': password}),
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] == true && data['hash'] != null) {
+      return data['hash'];
+    } else {
+      throw Exception(data['error'] ?? 'Error al generar el hash de la contraseña');
     }
   }
 } 

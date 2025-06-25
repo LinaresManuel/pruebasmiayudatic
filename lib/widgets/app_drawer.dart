@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/user_provider.dart';
 
 class AppDrawer extends StatelessWidget {
   // El parámetro `currentRoute` nos ayudará a resaltar la pantalla actual en el menú.
   final String currentRoute;
 
-  const AppDrawer({super.key, required this.currentRoute});
+  const AppDrawer({Key? key, required this.currentRoute}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context).user;
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -89,26 +92,27 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Configuración'),
-            selected: currentRoute == '/configuracion',
-            selectedTileColor: Colors.cyan.withOpacity(0.1),
-            onTap: () {
-              if (currentRoute == '/configuracion') {
-                Navigator.pop(context);
-              } else {
-                Navigator.pushReplacementNamed(context, '/configuracion');
-              }
-            },
-          ),
+          if (user != null && (user.rol == 'admin' || user.rol == 'Administrador' || user.rol == '2'))
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Configuración'),
+              selected: currentRoute == '/configuracion',
+              selectedTileColor: Colors.cyan.withOpacity(0.1),
+              onTap: () {
+                if (currentRoute == '/configuracion') {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.pushReplacementNamed(context, '/configuracion');
+                }
+              },
+            ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Cerrar Sesión', style: TextStyle(color: Colors.red)),
+            leading: const Icon(Icons.logout),
+            title: const Text('Cerrar sesión'),
             onTap: () {
-              // Eliminar todas las rutas anteriores y volver a la pantalla de inicio de sesión
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+              Provider.of<UserProvider>(context, listen: false).logout();
+              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
             },
           ),
         ],

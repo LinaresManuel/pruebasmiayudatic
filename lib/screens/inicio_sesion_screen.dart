@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:provider/provider.dart';
+import '../models/user_provider.dart';
 
 class InicioSesionScreen extends StatefulWidget {
   const InicioSesionScreen({super.key});
@@ -36,6 +38,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
         if (!mounted) return;
 
         if (user != null) {
+          Provider.of<UserProvider>(context, listen: false).setUser(user);
           Navigator.pushReplacementNamed(context, '/support-dashboard');
         }
       } catch (e) {

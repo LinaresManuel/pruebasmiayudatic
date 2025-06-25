@@ -161,6 +161,43 @@ function updateStaffMember($id, $data) {
     }
 }
 
+// NUEVO: Función para obtener personal filtrado y paginado
+function getStaffFiltered($cedula = '', $page = 1, $perPage = 10) {
+    global $conn;
+    $offset = ($page - 1) * $perPage;
+    $params = [];
+    $where = '';
+    if ($cedula !== '') {
+        $where = 'WHERE u.cedula LIKE ?';
+        $params[] = "%$cedula%";
+    }
+    $query = "SELECT u.id_usuario, u.nombre, u.apellido, u.cedula, 
+                     u.correo_electronico, r.nombre_rol, u.fecha_creacion, 
+                     u.ultima_sesion
+              FROM tic_usuarios u
+              JOIN tic_roles r ON u.id_rol = r.id_rol
+              $where
+              ORDER BY u.nombre, u.apellido
+              LIMIT $perPage OFFSET $offset";
+    $stmt = $conn->prepare($query);
+    $stmt->execute($params);
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Total para paginación
+    $countQuery = "SELECT COUNT(*) FROM tic_usuarios u " . ($where ? $where : '');
+    $countStmt = $conn->prepare($countQuery);
+    $countStmt->execute($params);
+    $total = $countStmt->fetchColumn();
+
+    return [
+        'success' => true,
+        'data' => $result,
+        'total' => $total,
+        'page' => $page,
+        'perPage' => $perPage
+    ];
+}
+
 // Procesar la solicitud
 $method = $_SERVER['REQUEST_METHOD'];
 writeLog("Método de solicitud recibido: " . $method, "staff");
@@ -168,44 +205,68 @@ writeLog("Método de solicitud recibido: " . $method, "staff");
 switch($method) {
     case 'GET':
         if (isset($_GET['id'])) {
-            echo json_encode(getStaffMember($_GET['id']));
+            $data = getStaffMember($_GET['id']);
+            echo json_encode(['success' => !isset($data['error']), 'data' => $data, 'error' => $data['error'] ?? null]);
+        } else if (isset($_GET['cedula']) || isset($_GET['page'])) {
+            $cedula = $_GET['cedula'] ?? '';
+            $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+            $perPage = isset($_GET['perPage']) ? intval($_GET['perPage']) : 10;
+            $result = getStaffFiltered($cedula, $page, $perPage);
+            echo json_encode($result);
         } else {
-            echo json_encode(getAllStaff());
+            $all = getAllStaff();
+            echo json_encode(['success' => true, 'data' => $all]);
         }
         break;
-        
     case 'POST':
         $data = json_decode(file_get_contents('php://input'), true);
         if ($data) {
-            echo json_encode(createStaffMember($data));
+            $result = createStaffMember($data);
+            echo json_encode($result + ['success' => !isset($result['error'])]);
         } else {
             writeLog("Error: Datos inválidos recibidos en POST", "staff");
             http_response_code(400);
-            echo json_encode(['error' => 'Invalid data']);
+            echo json_encode(['success' => false, 'error' => 'Invalid data']);
         }
         break;
-        
     case 'PUT':
         if (!isset($_GET['id'])) {
             writeLog("Error: ID de personal no proporcionado en PUT", "staff");
             http_response_code(400);
-            echo json_encode(['error' => 'Staff ID required']);
+            echo json_encode(['success' => false, 'error' => 'Staff ID required']);
             break;
         }
-        
         $data = json_decode(file_get_contents('php://input'), true);
         if ($data) {
-            echo json_encode(updateStaffMember($_GET['id'], $data));
+            $result = updateStaffMember($_GET['id'], $data);
+            echo json_encode($result + ['success' => !isset($result['error'])]);
         } else {
             writeLog("Error: Datos inválidos recibidos en PUT", "staff");
             http_response_code(400);
-            echo json_encode(['error' => 'Invalid data']);
+            echo json_encode(['success' => false, 'error' => 'Invalid data']);
         }
         break;
-        
+    case 'DELETE':
+        if (!isset($_GET['id'])) {
+            writeLog("Error: ID de personal no proporcionado en DELETE", "staff");
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Staff ID required']);
+            break;
+        }
+        $id = $_GET['id'];
+        try {
+            $stmt = $conn->prepare("DELETE FROM tic_usuarios WHERE id_usuario = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true, 'message' => 'Staff member deleted']);
+        } catch(PDOException $e) {
+            writeLog("Error al eliminar personal ID $id: " . $e->getMessage(), "staff");
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        break;
     default:
         writeLog("Método no soportado: " . $method, "staff");
         http_response_code(405);
-        echo json_encode(['error' => 'Method not allowed']);
+        echo json_encode(['success' => false, 'error' => 'Method not allowed']);
 }
 ?> 

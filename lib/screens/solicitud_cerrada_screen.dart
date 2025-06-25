@@ -203,23 +203,23 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('ID: ${ticket.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                                    Text('ID: ${ticket.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                       decoration: BoxDecoration(
                                         color: Colors.green,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: const Text('Cerrada', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                                      child: const Text('Cerrada', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                                Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                                 const SizedBox(height: 2),
-                                Text(ticket.dependencia, style: TextStyle(color: Colors.grey[700], fontSize: 13)),
+                                Text(ticket.dependencia, style: TextStyle(color: Colors.grey[700], fontSize: 15)),
                                 const SizedBox(height: 8),
-                                Text(ticket.descripcion, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14)),
+                                Text(ticket.descripcion, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15)),
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
@@ -227,15 +227,15 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                                       Flexible(
                                         child: Chip(
                                           avatar: const Icon(Icons.person, size: 16),
-                                          label: Text(ticket.personalAsignado!, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis),
+                                          label: Text(ticket.personalAsignado!, style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis),
                                           backgroundColor: Colors.grey[200],
                                         ),
                                       )
                                     else
-                                      const Text('Sin asignar', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+                                      const Text('Sin asignar', style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic)),
                                     const Spacer(),
                                     if (ticket.fechaCierre != null)
-                                      Text(DateFormat('dd/MM/yyyy').format(ticket.fechaCierre!), style: const TextStyle(fontSize: 12)),
+                                      Text(DateFormat('dd/MM/yyyy').format(ticket.fechaCierre!), style: const TextStyle(fontSize: 13)),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
@@ -243,8 +243,8 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                                   alignment: Alignment.centerRight,
                                   child: TextButton.icon(
                                     onPressed: () => _showTicketDetails(ticket),
-                                    icon: const Icon(Icons.info, color: Colors.blue, size: 18),
-                                    label: const Text('Detalles'),
+                                    icon: const Icon(Icons.info, color: Colors.blue, size: 19),
+                                    label: const Text('Detalles', style: TextStyle(fontSize: 15)),
                                   ),
                                 ),
                               ],
@@ -285,191 +285,108 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                     children: [
                       Expanded(
                         child: Card(
-                          margin: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
+                          margin: const EdgeInsets.symmetric(horizontal: 16.0),
                           elevation: 6,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
+                          clipBehavior: Clip.antiAlias,
                           child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
+                            scrollDirection: Axis.vertical,
                             child: SingleChildScrollView(
-                              child: Container(
-                                constraints: BoxConstraints(
-                                  minWidth: isSmallScreen ? constraints.maxWidth : 800,
-                                  maxWidth: isMediumScreen ? constraints.maxWidth : 1600,
-                                ),
+                              scrollDirection: Axis.horizontal,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(minWidth: constraints.maxWidth),
                                 child: DataTable(
                                   headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
-                                  columnSpacing: isSmallScreen ? 10 : 20,
-                                  horizontalMargin: isSmallScreen ? 10 : 24,
+                                  columnSpacing: isSmallScreen ? 15 : 20,
+                                  horizontalMargin: isSmallScreen ? 12 : 24,
                                   columns: [
                                     DataColumn(
-                                      label: Text('ID', 
-                                        style: TextStyle(
-                                          fontSize: isSmallScreen ? 12 : 14,
-                                          fontWeight: FontWeight.bold
-                                        )
-                                      ), 
+                                      label: Text('ID',
+                                        style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                       numeric: true
                                     ),
-                                    if (!isSmallScreen) 
+                                    if (!isSmallScreen)
                                       DataColumn(
-                                        label: Text('Fecha',
-                                          style: TextStyle(fontSize: isSmallScreen ? 12 : 14,
-                                          fontWeight: FontWeight.bold
-                                          )
-                                        )
+                                        label: Text('Fecha', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                       ),
                                     DataColumn(
-                                      label: Text('Solicitante',
-                                        style: TextStyle(
-                                          fontSize: isSmallScreen ? 12 : 14,
-                                          fontWeight: FontWeight.bold
-                                        )
-                                      )
+                                      label: Text('Solicitante', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                     ),
-                                    if (!isSmallScreen) 
+                                    if (!isSmallScreen)
                                       DataColumn(
-                                        label: Text('Dependencia',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                          )
-                                        )
+                                        label: Text('Dependencia', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                       ),
                                     DataColumn(
-                                      label: Text('Descripción',
-                                        style: TextStyle(
-                                          fontSize: isSmallScreen ? 12 : 14,
-                                          fontWeight: FontWeight.bold
-                                        )
-                                      ),
+                                      label: Text('Descripción', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                       tooltip: 'Haz clic en el ícono de información para ver la descripción completa',
                                     ),
                                     DataColumn(
-                                      label: Text('Estado',
-                                        style: TextStyle(
-                                          fontSize: isSmallScreen ? 12 : 14,
-                                          fontWeight: FontWeight.bold
-                                        )
-                                      )
+                                      label: Text('Estado', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                     ),
                                     if (!isMediumScreen)
                                       DataColumn(
-                                        label: Text('Tipo de Servicio',
-                                          style: TextStyle(
-                                            fontSize: isSmallScreen ? 12 : 14,
-                                            fontWeight: FontWeight.bold
-                                          )
-                                        )
+                                        label: Text('Tipo de Servicio', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                       ),
                                     DataColumn(
-                                      label: Text('Personal Asignado',
-                                        style: TextStyle(
-                                          fontSize: isSmallScreen ? 12 : 14,
-                                          fontWeight: FontWeight.bold
-                                        )
-                                      )
+                                      label: Text('Personal Asignado', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                     ),
                                     DataColumn(
-                                      label: Text('Fecha de Cierre',
-                                        style: TextStyle(
-                                          fontSize: isSmallScreen ? 12 : 14,
-                                          fontWeight: FontWeight.bold
-                                        )
-                                      )
+                                      label: Text('Fecha de Cierre', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                     ),
                                     DataColumn(
-                                      label: Text('Acciones',
-                                        style: TextStyle(
-                                          fontSize: isSmallScreen ? 12 : 14,
-                                          fontWeight: FontWeight.bold
-                                        )
-                                      )
+                                      label: Text('Acciones', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)),
                                     ),
                                   ],
                                   rows: paginatedTickets.map((ticket) {
                                     return DataRow(
                                       cells: [
                                         DataCell(
-                                          Text(
-                                            ticket.id.toString(),
-                                            style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                          )
+                                          Text(ticket.id.toString(), style: TextStyle(fontSize: isSmallScreen ? 15 : 16)),
                                         ),
                                         if (!isSmallScreen)
                                           DataCell(
-                                            Text(
-                                              DateFormat('dd/MM/yyyy').format(ticket.fechaReporte),
-                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                            )
+                                            Text(DateFormat('dd/MM/yyyy').format(ticket.fechaReporte), style: TextStyle(fontSize: isSmallScreen ? 15 : 16)),
                                           ),
                                         DataCell(
-                                          Text(
-                                            '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}',
-                                            style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                          )
+                                          Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}', style: TextStyle(fontSize: isSmallScreen ? 15 : 16)),
                                         ),
                                         if (!isSmallScreen)
                                           DataCell(
-                                            Text(
-                                              ticket.dependencia,
-                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                            )
+                                            Text(ticket.dependencia, style: TextStyle(fontSize: isSmallScreen ? 15 : 16)),
                                           ),
                                         DataCell(
-                                          Container(
-                                            width: isSmallScreen ? 100 : 200,
-                                            child: Text(
-                                              ticket.descripcion,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                            ),
+                                          SizedBox(
+                                            width: isSmallScreen ? 120 : 220,
+                                            child: Text(ticket.descripcion, overflow: TextOverflow.ellipsis, maxLines: 1, style: TextStyle(fontSize: isSmallScreen ? 15 : 16)),
                                           ),
                                         ),
                                         DataCell(
                                           Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: isSmallScreen ? 4 : 8, 
-                                              vertical: isSmallScreen ? 2 : 4
-                                            ),
+                                            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 6 : 10, vertical: isSmallScreen ? 3 : 5),
                                             decoration: BoxDecoration(
                                               color: Colors.green,
                                               borderRadius: BorderRadius.circular(12),
                                             ),
-                                            child: Text(
-                                              ticket.estado ?? 'Cerrada',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: isSmallScreen ? 11 : 13
-                                              ),
-                                            ),
+                                            child: Text(ticket.estado ?? 'Cerrada', style: TextStyle(color: Colors.white, fontSize: isSmallScreen ? 15 : 16)),
                                           ),
                                         ),
                                         if (!isMediumScreen)
                                           DataCell(
-                                            Text(
-                                              ticket.tipoServicio ?? '-',
-                                              style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                            )
+                                            Text(ticket.tipoServicio ?? '-', style: TextStyle(fontSize: isSmallScreen ? 15 : 16)),
                                           ),
                                         DataCell(
-                                          Text(
-                                            ticket.personalAsignado ?? '-',
-                                            style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                          )
+                                          Text(ticket.personalAsignado ?? '-', style: TextStyle(fontSize: isSmallScreen ? 15 : 16)),
                                         ),
                                         DataCell(
                                           ticket.fechaCierre != null
-                                            ? Text(DateFormat('dd/MM/yyyy').format(ticket.fechaCierre!),
-                                                style: TextStyle(fontSize: isSmallScreen ? 11 : 13),
-                                              )
-                                            : Text('-', style: TextStyle(fontSize: isSmallScreen ? 11 : 13)),
+                                            ? Text(DateFormat('dd/MM/yyyy').format(ticket.fechaCierre!), style: TextStyle(fontSize: isSmallScreen ? 15 : 16))
+                                            : Text('-', style: TextStyle(fontSize: isSmallScreen ? 15 : 16)),
                                         ),
                                         DataCell(
                                           IconButton(
-                                            icon: Icon(Icons.info, color: Colors.blue, size: isSmallScreen ? 18 : 24),
+                                            icon: Icon(Icons.info, color: Colors.blue, size: isSmallScreen ? 19 : 24),
                                             onPressed: () => _showTicketDetails(ticket),
                                           ),
                                         ),
@@ -560,3 +477,4 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
     );
   }
 }
+
