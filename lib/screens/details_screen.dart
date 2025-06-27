@@ -229,17 +229,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         toolbarHeight: 80,
-        backgroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              Navigator.pushReplacementNamed(context, '/support-dashboard');
-            }
-          },
-        ),
+        backgroundColor: const Color(0xFF04324D),
         flexibleSpace: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(

@@ -426,6 +426,6 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
   }
 
   Color _getStatusColor(String? status) {
-    return status == 'Cerrada' ? Colors.green : Colors.orange;
+    return status == 'Cerrada' ? Colors.green : Colors.red;
   }
 } 
