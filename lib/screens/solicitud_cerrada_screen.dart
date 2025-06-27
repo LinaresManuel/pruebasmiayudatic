@@ -3,6 +3,12 @@ import '../models/ticket_model.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import '../widgets/app_drawer.dart';
+import 'dart:typed_data';
+import 'package:excel/excel.dart' as ex;
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class SolicitudCerradaScreen extends StatefulWidget {
   const SolicitudCerradaScreen({super.key});
@@ -19,6 +25,8 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
   bool _isAscending = true;
   int _currentPage = 0;
   static const int _rowsPerPage = 10;
+  DateTime? _fechaInicio;
+  DateTime? _fechaFin;
 
   @override
   void initState() {
@@ -58,11 +66,120 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
     });
   }
 
-  void _toggleSortDirection() {
-    setState(() {
-      _isAscending = !_isAscending;
-      _sortTicketsByDate();
-    });
+  List<Ticket> get _ticketsFiltrados {
+    if (_fechaInicio == null || _fechaFin == null) return _ticketsCerrados;
+    return _ticketsCerrados.where((t) {
+      if (t.fechaCierre == null) return false;
+      return !t.fechaCierre!.isBefore(_fechaInicio!) && !t.fechaCierre!.isAfter(_fechaFin!);
+    }).toList();
+  }
+
+  Future<void> _selectFechaInicio() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _fechaInicio ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _fechaInicio = picked;
+      });
+    }
+  }
+
+  Future<void> _selectFechaFin() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _fechaFin ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _fechaFin = picked;
+      });
+    }
+  }
+
+  Future<void> _exportarExcel() async {
+    final excel = ex.Excel.createExcel();
+    final sheet = excel['Solicitudes Cerradas'];
+    // Encabezados
+    sheet.appendRow([
+      'ID', 'Fecha de Reporte', 'Solicitante', 'Correo', 'Contacto', 'Dependencia', 'Estado', 'Tipo de Servicio', 'Personal Asignado', 'Fecha de Cierre', 'Descripción', 'Solución'
+    ]);
+    for (final t in _ticketsFiltrados) {
+      sheet.appendRow([
+        t.id,
+        DateFormat('dd/MM/yyyy').format(t.fechaReporte),
+        '${t.nombresSolicitante} ${t.apellidosSolicitante}',
+        t.correoSolicitante,
+        t.numeroContacto,
+        t.dependencia,
+        t.estado,
+        t.tipoServicio,
+        t.personalAsignado,
+        t.fechaCierre != null ? DateFormat('dd/MM/yyyy').format(t.fechaCierre!) : '',
+        t.descripcion,
+        t.descripcionSolucion ?? '',
+      ]);
+    }
+    final fileBytes = excel.encode();
+    if (fileBytes != null) {
+      await Printing.sharePdf(bytes: Uint8List.fromList(fileBytes), filename: 'solicitudes_cerradas.xlsx');
+    }
+  }
+
+  Future<void> _exportarPDF() async {
+    final pdf = pw.Document();
+    final logoBytes = await rootBundle.load('assets/sena_logo.png');
+    final logo = pw.MemoryImage(logoBytes.buffer.asUint8List());
+    pdf.addPage(
+      pw.MultiPage(
+        build: (context) => [
+          pw.Row(
+            children: [
+              pw.Image(logo, height: 60),
+              pw.SizedBox(width: 20),
+              pw.Text('Solicitudes Cerradas', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            ],
+          ),
+          pw.SizedBox(height: 16),
+          pw.Text(
+            _fechaInicio != null && _fechaFin != null
+                ? 'Desde: \\${DateFormat('dd/MM/yyyy').format(_fechaInicio!)}  Hasta: \\${DateFormat('dd/MM/yyyy').format(_fechaFin!)}'
+                : '',
+            style: pw.TextStyle(fontSize: 14),
+          ),
+          pw.SizedBox(height: 12),
+          pw.Table.fromTextArray(
+            headers: [
+              'ID', 'Fecha de Reporte', 'Solicitante', 'Correo', 'Contacto', 'Dependencia', 'Estado', 'Tipo de Servicio', 'Personal Asignado', 'Fecha de Cierre', 'Descripción', 'Solución'
+            ],
+            data: _ticketsFiltrados.map((t) => [
+              t.id,
+              DateFormat('dd/MM/yyyy').format(t.fechaReporte),
+              '${t.nombresSolicitante} ${t.apellidosSolicitante}',
+              t.correoSolicitante,
+              t.numeroContacto,
+              t.dependencia,
+              t.estado,
+              t.tipoServicio,
+              t.personalAsignado,
+              t.fechaCierre != null ? DateFormat('dd/MM/yyyy').format(t.fechaCierre!) : '',
+              t.descripcion,
+              t.descripcionSolucion ?? '',
+            ]).toList(),
+            cellStyle: pw.TextStyle(fontSize: 8),
+            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+            cellAlignment: pw.Alignment.centerLeft,
+            headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
+          ),
+        ],
+      ),
+    );
+    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
   }
 
   @override
@@ -71,8 +188,8 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
     final isMediumScreen = MediaQuery.of(context).size.width < 1200;
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: isSmallScreen ? 80 : 160,
-        backgroundColor: Colors.black,
+        toolbarHeight: isSmallScreen ? 80 : 100,
+        backgroundColor: const Color(0xFF04324D),
         automaticallyImplyLeading: false,
         flexibleSpace: SafeArea(
           child: Padding(
@@ -142,27 +259,36 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                     ),
                     Row(
                       children: [
-                        IconButton(
-                          onPressed: _toggleSortDirection,
-                          icon: Icon(
-                            _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                            color: Colors.blue,
-                          ),
-                          tooltip: _isAscending ? 'Ordenar descendente' : 'Ordenar ascendente',
+                        OutlinedButton.icon(
+                          onPressed: _selectFechaInicio,
+                          icon: const Icon(Icons.date_range),
+                          label: Text(_fechaInicio == null ? 'Fecha inicio' : DateFormat('dd/MM/yyyy').format(_fechaInicio!)),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: _selectFechaFin,
+                          icon: const Icon(Icons.date_range),
+                          label: Text(_fechaFin == null ? 'Fecha fin' : DateFormat('dd/MM/yyyy').format(_fechaFin!)),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton.icon(
+                          onPressed: _ticketsFiltrados.isNotEmpty ? _exportarExcel : null,
+                          icon: const Icon(Icons.download),
+                          label: const Text('Excel'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: _ticketsFiltrados.isNotEmpty ? _exportarPDF : null,
+                          icon: const Icon(Icons.picture_as_pdf),
+                          label: const Text('PDF'),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red[400], foregroundColor: Colors.white),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
                           onPressed: _loadTicketsCerrados,
                           icon: const Icon(Icons.refresh),
-                          label: isSmallScreen ? const SizedBox.shrink() : const Text('Actualizar'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.cyan[600],
-                            foregroundColor: Colors.black,
-                            shape: isSmallScreen ? const CircleBorder() : RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
-                          ),
+                          tooltip: 'Actualizar',
                         ),
                       ],
                     ),
@@ -188,9 +314,9 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                   if (isSmallScreen) {
                     return ListView.builder(
                       padding: const EdgeInsets.only(bottom: 16),
-                      itemCount: _ticketsCerrados.length,
+                      itemCount: _ticketsFiltrados.length,
                       itemBuilder: (context, index) {
-                        final ticket = _ticketsCerrados[index];
+                        final ticket = _ticketsFiltrados[index];
                         return Card(
                           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           elevation: 3,
@@ -257,10 +383,10 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                   // PAGINACIÓN: calcular el rango de tickets a mostrar
                   final int startIndex = _currentPage * _rowsPerPage;
                   final int endIndex = (_currentPage + 1) * _rowsPerPage;
-                  final List<Ticket> paginatedTickets = _ticketsCerrados.length > startIndex
-                      ? _ticketsCerrados.sublist(startIndex, endIndex > _ticketsCerrados.length ? _ticketsCerrados.length : endIndex)
+                  final List<Ticket> paginatedTickets = _ticketsFiltrados.length > startIndex
+                      ? _ticketsFiltrados.sublist(startIndex, endIndex > _ticketsFiltrados.length ? _ticketsFiltrados.length : endIndex)
                       : [];
-                  final totalPages = (_ticketsCerrados.length / _rowsPerPage).ceil();
+                  final totalPages = (_ticketsFiltrados.length / _rowsPerPage).ceil();
                   Widget paginationControls = Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -276,7 +402,7 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: endIndex < _ticketsCerrados.length ? () => setState(() => _currentPage++) : null,
+                        onPressed: endIndex < _ticketsFiltrados.length ? () => setState(() => _currentPage++) : null,
                         child: const Icon(Icons.chevron_right),
                       ),
                     ],
@@ -298,7 +424,7 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(minWidth: constraints.maxWidth),
                                 child: DataTable(
-                                  headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
+                                  headingRowColor: MaterialStateProperty.all(const Color(0xFF39A900)),
                                   columnSpacing: isSmallScreen ? 15 : 20,
                                   horizontalMargin: isSmallScreen ? 12 : 24,
                                   columns: [
@@ -366,7 +492,7 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                                           Container(
                                             padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 6 : 10, vertical: isSmallScreen ? 3 : 5),
                                             decoration: BoxDecoration(
-                                              color: Colors.green,
+                                              color: Colors.lightGreen,
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             child: Text(ticket.estado ?? 'Cerrada', style: TextStyle(color: Colors.white, fontSize: isSmallScreen ? 15 : 16)),

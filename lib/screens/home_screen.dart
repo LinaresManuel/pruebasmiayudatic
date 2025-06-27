@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   constraints: const BoxConstraints(maxWidth: 500),
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: const Color(0xFF04324D),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
@@ -85,26 +85,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 32),
                         // Botón Reportar Falla
                         SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
+                          width: 250,
+                          child: ElevatedButton.icon(
                             onPressed: () {
                               Navigator.pushNamed(context, '/ticket-form');
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2196F3),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 26),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              elevation: 2,
-                            ),
-                            child: const Text(
+                            icon: const Icon(Icons.report_problem, color: Colors.white),
+                            label: const Text(
                               'REPORTAR FALLA',
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
                               ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF39A900),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 26),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: const BorderSide(color: Colors.black, width: 2),
+                              ),
+                              elevation: 2,
                             ),
                           ),
                         ),
@@ -122,24 +124,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 16),
                         SizedBox(
                           width: 200,
-                          child: ElevatedButton(
+                          child: ElevatedButton.icon(
                             onPressed: () {
                               Navigator.pushNamed(context, '/login');
                             },
+                            icon: const Icon(Icons.engineering, color: Colors.black87),
+                            label: const Text(
+                              'Personal Técnico',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE0F7F7),
+                              backgroundColor: const Color.fromARGB(255, 191, 237, 237),
                               foregroundColor: Colors.black87,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 20),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'Personal Técnico',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),

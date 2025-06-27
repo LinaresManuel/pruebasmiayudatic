@@ -167,17 +167,17 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     try {
-                      String? passwordHash;
+                      String? password;
                       if (passwordController.text.isNotEmpty) {
-                        passwordHash = await _apiService.generatePasswordHash(passwordController.text);
+                        password = passwordController.text;
                       }
                       final data = {
                         'nombre': nombreController.text,
                         'apellido': apellidoController.text,
                         'cedula': cedulaController.text,
                         'correo_electronico': correoController.text,
-                        'id_rol': int.parse(selectedRolId),
-                        if (passwordHash != null) 'password_hash': passwordHash,
+                        'id_rol': int.tryParse(selectedRolId.toString()) ?? selectedRolId,
+                        if (password != null) 'password': password,
                       };
                       if (isEdit) {
                         await _apiService.updateStaffMember(user!.id, data);
@@ -251,8 +251,8 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: isSmallScreen ? 80 : 160,
-        backgroundColor: Colors.black,
+        toolbarHeight: isSmallScreen ? 80 : 100,
+        backgroundColor: const Color(0xFF04324D),
         automaticallyImplyLeading: false,
         flexibleSpace: SafeArea(
           child: Padding(
@@ -385,7 +385,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(minWidth: constraints.maxWidth),
                                 child: DataTable(
-                                  headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
+                                  headingRowColor: MaterialStateProperty.all(const Color(0xFF39A900)),
                                   columnSpacing: isSmallScreen ? 15 : 20,
                                   horizontalMargin: isSmallScreen ? 12 : 24,
                                   columns: [

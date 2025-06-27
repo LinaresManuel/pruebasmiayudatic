@@ -290,13 +290,34 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('ID: ${ticket.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(ticket.estado),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(ticket.estado ?? 'Abierta', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(ticket.estado),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(ticket.estado ?? 'Abierta', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                      if (ticket.estado != 'Cerrada')
+                        Container(
+                          width: 32, height: 32,
+                          decoration: BoxDecoration(
+                            color: _colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado)),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '${_diasAbierta(ticket.fechaReporte, ticket.estado)}',
+                            style: TextStyle(
+                              color: _textColorSemaforo(_colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado))),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -350,8 +371,8 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
     final isSmallScreen = MediaQuery.of(context).size.width < 800;
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: isSmallScreen ? 80 : 160,
-        backgroundColor: Colors.black,
+        toolbarHeight: isSmallScreen ? 80 : 100,
+        backgroundColor: const Color(0xFF04324D),
         automaticallyImplyLeading: false,
         flexibleSpace: SafeArea(
           child: Padding(
@@ -382,7 +403,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                 // Image.asset('assets/miayudatic_logo.png', height: isSmallScreen ? 40 : 120),
                 Expanded(
                   child: Text(
-                    'Servicios TIC Sena Regional Guainía',
+                    'Soporte TIC SENA Regional Guainía',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -417,7 +438,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                            Text(
-                            'Gestión de Solicitudes',
+                            'Solicitudes Abiertas',
                             style: TextStyle(
                               fontSize: isSmallScreen ? 20 : 24,
                               fontWeight: FontWeight.bold,
@@ -526,7 +547,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                     child: ConstrainedBox(
                                       constraints: BoxConstraints(minWidth: constraints.maxWidth),
                                       child: DataTable(
-                                        headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
+                                        headingRowColor: MaterialStateProperty.all(const Color(0xFF39A900)),
                                         columnSpacing: isLayoutSmall ? 10 : 20,
                                         horizontalMargin: isLayoutSmall ? 10 : 24,
                                         columns: [
@@ -536,6 +557,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                           if (!isLayoutSmall) const DataColumn(label: Text('Dependencia', style: TextStyle(fontWeight: FontWeight.bold))),
                                           const DataColumn(label: Text('Descripción', style: TextStyle(fontWeight: FontWeight.bold))),
                                           const DataColumn(label: Text('Estado', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          const DataColumn(label: Text('Días Abierta', style: TextStyle(fontWeight: FontWeight.bold))),
                                           if (!isLayoutMedium) const DataColumn(label: Text('Tipo de Servicio', style: TextStyle(fontWeight: FontWeight.bold))),
                                           const DataColumn(label: Text('Personal Asignado', style: TextStyle(fontWeight: FontWeight.bold))),
                                           const DataColumn(label: Text('Acciones', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -563,12 +585,37 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                                   decoration: BoxDecoration(
                                                     color: _getStatusColor(ticket.estado),
                                                     borderRadius: BorderRadius.circular(12),
+                                                    border: ticket.estado == 'Abierta'
+                                                        ? Border.all(color: const Color(0xFF04324D), width: 2)
+                                                        : null,
                                                   ),
                                                   child: Text(
                                                     ticket.estado ?? 'Abierta',
-                                                    style: const TextStyle(color: Colors.white),
+                                                    style: const TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ),
+                                              ),
+                                              DataCell(
+                                                ticket.estado != 'Cerrada'
+                                                  ? Container(
+                                                      width: 32, height: 32,
+                                                      decoration: BoxDecoration(
+                                                        color: _colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado)),
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      alignment: Alignment.center,
+                                                      child: Text(
+                                                        '${_diasAbierta(ticket.fechaReporte, ticket.estado)}',
+                                                        style: TextStyle(
+                                                          color: _textColorSemaforo(_colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado))),
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : const Text('-'),
                                               ),
                                               if (!isLayoutMedium)
                                                 DataCell(
@@ -645,6 +692,32 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
   }
 
   Color _getStatusColor(String? status) {
-    return status == 'Cerrada' ? Colors.green : Colors.orange;
+    if (status == 'Cerrada') {
+      return Colors.green;
+    } else if (status == 'Abierta') {
+      return const Color.fromARGB(255, 255, 255, 255);
+    } else {
+      return Colors.orange;
+    }
+  }
+
+  // Calcula los días que lleva abierta una solicitud
+  int _diasAbierta(DateTime fechaReporte, String? estado) {
+    if (estado != 'Cerrada') {
+      final ahora = DateTime.now();
+      return ahora.difference(fechaReporte).inDays;
+    }
+    return 0;
+  }
+
+  Color _colorSemaforo(int dias) {
+    if (dias >= 4) return Colors.red;
+    if (dias >= 2) return Colors.orange;
+    return Colors.green;
+  }
+
+  Color _textColorSemaforo(Color bg) {
+    // Usa blanco para rojo y naranja, negro para verde claro
+    return bg == Colors.green ? Colors.black : Colors.white;
   }
 } 

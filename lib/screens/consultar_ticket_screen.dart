@@ -58,8 +58,8 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
     final isSmallScreen = MediaQuery.of(context).size.width < 800;
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: isSmallScreen ? 80 : 160,
-        backgroundColor: Colors.black,
+        toolbarHeight: isSmallScreen ? 80 : 100,
+        backgroundColor: const Color(0xFF04324D),
         automaticallyImplyLeading: false,
         flexibleSpace: SafeArea(
           child: Padding(
@@ -111,19 +111,63 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _ticketIdController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Número de Ticket (ID)',
-                hintText: 'Ingrese el ID del ticket a consultar',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: _searchTicket,
-                ),
+            // Título arriba de la caja de texto
+            const Text(
+              'Ingrese un N° de ticket para buscar',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF04324D),
               ),
-              onSubmitted: (_) => _searchTicket(),
+            ),
+            const SizedBox(height: 24), // Espacio adicional para bajar la caja
+            Container(
+              width: 300, // Aumentado de 200 a 300 para más espacio
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade600.withOpacity(0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _ticketIdController,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                maxLength: 4, // Limitar a 4 dígitos
+                decoration: InputDecoration(
+                  labelText: 'Número de Ticket',
+                  hintText: '0000',
+                  counterText: '', // Ocultar contador
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.black, width: 2),
+                  ),
+                  suffixIcon: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      icon: const Icon(Icons.search, color: Colors.black),
+                      onPressed: _searchTicket,
+                    ),
+                  ),
+                ),
+                onSubmitted: (_) => _searchTicket(),
+              ),
             ),
             const SizedBox(height: 20),
             if (_isLoading)
@@ -133,9 +177,7 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
             else if (_searched && _ticket == null)
               const Text('No se encontró ningún ticket con ese ID.', style: TextStyle(fontSize: 16))
             else if (_ticket != null)
-              _buildTicketDetails(_ticket!)
-            else
-              const Text('Ingrese un ID para buscar un ticket.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+              _buildTicketDetails(_ticket!),
           ],
         ),
       ),
@@ -275,7 +317,7 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
-                          headingRowColor: MaterialStateProperty.all(const Color(0xFFE0F7F7)),
+                          headingRowColor: MaterialStateProperty.all(const Color(0xFF39A900)),
                           columns: const [
                             DataColumn(label: Text('ID', style: TextStyle(fontWeight: FontWeight.bold)), numeric: true),
                             DataColumn(label: Text('Fecha', style: TextStyle(fontWeight: FontWeight.bold))),

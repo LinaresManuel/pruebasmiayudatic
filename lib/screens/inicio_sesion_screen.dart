@@ -69,7 +69,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                   decoration: const BoxDecoration(
-                    color: Colors.black,
+                    color: Color(0xFF04324D),
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
@@ -123,8 +123,8 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                             decoration: InputDecoration(
                               hintText: 'Identificación',
                               prefixIcon: Icon(
-                                Icons.person_outline,
-                                color: Colors.grey[600],
+                                Icons.email,
+                                color: Colors.black87,
                               ),
                               border: InputBorder.none,
                               contentPadding: const EdgeInsets.symmetric(
@@ -155,8 +155,8 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                             decoration: InputDecoration(
                               hintText: 'Contraseña',
                               prefixIcon: Icon(
-                                Icons.lock_outline,
-                                color: Colors.grey[600],
+                                Icons.lock,
+                                color: Colors.black87,
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
@@ -192,8 +192,9 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                               child: OutlinedButton(
                                 onPressed: _isLoading ? null : () => Navigator.pushNamed(context, '/'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.grey[800],
-                                  side: BorderSide(color: Colors.grey.shade300),
+                                  foregroundColor: Colors.red,
+                                  backgroundColor: Colors.white,
+                                  side: const BorderSide(color: Colors.red, width: 2),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 12,
                                     horizontal: 24,
@@ -207,6 +208,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
+                                    color: Colors.red,
                                   ),
                                 ),
                               ),
@@ -217,7 +219,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _handleLogin,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE0F7F7),
+                                  backgroundColor: const Color(0xFF39A900),
                                   foregroundColor: Colors.black87,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(

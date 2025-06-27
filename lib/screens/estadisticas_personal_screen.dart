@@ -132,8 +132,8 @@ class _EstadisticasPersonalScreenState extends State<EstadisticasPersonalScreen>
     final isSmallScreen = MediaQuery.of(context).size.width < 800;
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: isSmallScreen ? 80 : 160,
-        backgroundColor: Colors.black,
+        toolbarHeight: isSmallScreen ? 80 : 100,
+        backgroundColor: const Color(0xFF04324D),
         automaticallyImplyLeading: false,
         flexibleSpace: SafeArea(
           child: Padding(
@@ -311,6 +311,6 @@ class _EstadisticasPersonalScreenState extends State<EstadisticasPersonalScreen>
   }
 
   static const List<Color> _barColors = [
-    Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.red, Colors.cyan, Colors.teal, Colors.amber, Colors.pink, Colors.brown
+    Colors.blue, Color.fromARGB(255, 185, 194, 193), Colors.orange, Colors.yellow, Colors.red, Colors.cyan, Colors.teal, Colors.amber, Colors.pink, Colors.brown
   ];
 } 

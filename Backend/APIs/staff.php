@@ -119,6 +119,10 @@ function updateStaffMember($id, $data) {
             $updateFields[] = "apellido = ?";
             $params[] = $data['apellido'];
         }
+        if (isset($data['cedula'])) {
+            $updateFields[] = "cedula = ?";
+            $params[] = $data['cedula'];
+        }
         if (isset($data['correo_electronico'])) {
             // Verificar si el nuevo correo ya existe para otro usuario
             $stmt = $conn->prepare("SELECT COUNT(*) FROM tic_usuarios WHERE correo_electronico = ? AND id_usuario != ?");
