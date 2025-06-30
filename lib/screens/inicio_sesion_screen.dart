@@ -118,10 +118,10 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                           ),
                           child: TextFormField(
                             controller: _identificationController,
-                            keyboardType: TextInputType.number,
+                            keyboardType: TextInputType.text,
                             textInputAction: TextInputAction.next,
                             decoration: InputDecoration(
-                              hintText: 'Identificación',
+                              hintText: 'Correo',
                               prefixIcon: Icon(
                                 Icons.email,
                                 color: Colors.black87,
@@ -134,7 +134,7 @@ class _InicioSesionScreenState extends State<InicioSesionScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Por favor ingrese su identificación';
+                                return 'Por favor ingrese su correo';
                               }
                               return null;
                             },

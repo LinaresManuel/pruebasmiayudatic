@@ -247,52 +247,120 @@ class _SolicitudCerradaScreenState extends State<SolicitudCerradaScreen> {
                   style: TextStyle(fontSize: isSmallScreen ? 12 : 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Solicitudes Cerradas',
-                      style: TextStyle(
-                        fontSize: isSmallScreen ? 18 : 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        OutlinedButton.icon(
-                          onPressed: _selectFechaInicio,
-                          icon: const Icon(Icons.date_range),
-                          label: Text(_fechaInicio == null ? 'Fecha inicio' : DateFormat('dd/MM/yyyy').format(_fechaInicio!)),
-                        ),
-                        const SizedBox(width: 8),
-                        OutlinedButton.icon(
-                          onPressed: _selectFechaFin,
-                          icon: const Icon(Icons.date_range),
-                          label: Text(_fechaFin == null ? 'Fecha fin' : DateFormat('dd/MM/yyyy').format(_fechaFin!)),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton.icon(
-                          onPressed: _ticketsFiltrados.isNotEmpty ? _exportarExcel : null,
-                          icon: const Icon(Icons.download),
-                          label: const Text('Excel'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton.icon(
-                          onPressed: _ticketsFiltrados.isNotEmpty ? _exportarPDF : null,
-                          icon: const Icon(Icons.picture_as_pdf),
-                          label: const Text('PDF'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red[400], foregroundColor: Colors.white),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          onPressed: _loadTicketsCerrados,
-                          icon: const Icon(Icons.refresh),
-                          tooltip: 'Actualizar',
-                        ),
-                      ],
-                    ),
-                  ],
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isMobile = constraints.maxWidth < 600;
+                    if (isMobile) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Solicitudes Cerradas',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _selectFechaInicio,
+                                  icon: const Icon(Icons.date_range),
+                                  label: Text(_fechaInicio == null ? 'Fecha inicio' : DateFormat('dd/MM/yyyy').format(_fechaInicio!)),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _selectFechaFin,
+                                  icon: const Icon(Icons.date_range),
+                                  label: Text(_fechaFin == null ? 'Fecha fin' : DateFormat('dd/MM/yyyy').format(_fechaFin!)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _ticketsFiltrados.isNotEmpty ? _exportarExcel : null,
+                                  icon: const Icon(Icons.download),
+                                  label: const Text('Excel'),
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _ticketsFiltrados.isNotEmpty ? _exportarPDF : null,
+                                  icon: const Icon(Icons.picture_as_pdf),
+                                  label: const Text('PDF'),
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red[400], foregroundColor: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                onPressed: _loadTicketsCerrados,
+                                icon: const Icon(Icons.refresh),
+                                tooltip: 'Actualizar',
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    } else {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Solicitudes Cerradas',
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 18 : 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: _selectFechaInicio,
+                                icon: const Icon(Icons.date_range),
+                                label: Text(_fechaInicio == null ? 'Fecha inicio' : DateFormat('dd/MM/yyyy').format(_fechaInicio!)),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton.icon(
+                                onPressed: _selectFechaFin,
+                                icon: const Icon(Icons.date_range),
+                                label: Text(_fechaFin == null ? 'Fecha fin' : DateFormat('dd/MM/yyyy').format(_fechaFin!)),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                onPressed: _ticketsFiltrados.isNotEmpty ? _exportarExcel : null,
+                                icon: const Icon(Icons.download),
+                                label: const Text('Excel'),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                onPressed: _ticketsFiltrados.isNotEmpty ? _exportarPDF : null,
+                                icon: const Icon(Icons.picture_as_pdf),
+                                label: const Text('PDF'),
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red[400], foregroundColor: Colors.white),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                onPressed: _loadTicketsCerrados,
+                                icon: const Icon(Icons.refresh),
+                                tooltip: 'Actualizar',
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    }
+                  },
                 ),
               ],
             ),

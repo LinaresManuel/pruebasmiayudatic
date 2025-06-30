@@ -323,7 +323,6 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
                             DataColumn(label: Text('Fecha', style: TextStyle(fontWeight: FontWeight.bold))),
                             DataColumn(label: Text('Solicitante', style: TextStyle(fontWeight: FontWeight.bold))),
                             DataColumn(label: Text('Dependencia', style: TextStyle(fontWeight: FontWeight.bold))),
-                            DataColumn(label: Text('Descripción', style: TextStyle(fontWeight: FontWeight.bold))),
                             DataColumn(label: Text('Estado', style: TextStyle(fontWeight: FontWeight.bold))),
                             DataColumn(label: Text('Tipo de Servicio', style: TextStyle(fontWeight: FontWeight.bold))),
                             DataColumn(label: Text('Personal Asignado', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -337,13 +336,6 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
                                 DataCell(Text(DateFormat('dd/MM/yyyy').format(ticket.fechaReporte))),
                                 DataCell(Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}')),
                                 DataCell(Text(ticket.dependencia)),
-                                DataCell(
-                                  Text(
-                                    ticket.descripcion,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
                                 DataCell(Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(

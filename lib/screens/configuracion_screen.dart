@@ -381,6 +381,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                       ? _staff.sublist(startIndex, endIndex > _staff.length ? _staff.length : endIndex)
                       : [];
                   final totalPages = (_totalStaff / _rowsPerPage).ceil();
+                  final isMobile = constraints.maxWidth < 600;
                   Widget paginationControls = Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -391,7 +392,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
-                          'Página ${_currentPage + 1} de $totalPages',
+                          'Página ${_currentPage + 1} de ${totalPages}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),
@@ -401,71 +402,135 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                       ),
                     ],
                   );
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: Card(
-                          margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                          elevation: 6,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                  if (isMobile) {
+                    // Vista tipo ficha para móvil
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: paginatedStaff.length,
+                            itemBuilder: (context, index) {
+                              final user = paginatedStaff[index];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(Icons.person, color: Colors.teal[700]),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              '${user.nombre} ${user.apellido}',
+                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text('Cédula: ${user.cedula}', style: const TextStyle(fontSize: 15)),
+                                      Text('Correo: ${user.correo}', style: const TextStyle(fontSize: 15)),
+                                      Text('Rol: ${user.rol}', style: const TextStyle(fontSize: 15)),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit, color: Colors.blue),
+                                            onPressed: () => _showAddOrEditDialog(user: user),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete, color: Colors.red),
+                                            onPressed: () => _showDeleteDialog(user),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          clipBehavior: Clip.antiAlias,
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
+                        ),
+                        if (totalPages > 1) Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: paginationControls,
+                        ),
+                      ],
+                    );
+                  } else {
+                    // Vista de tabla para escritorio
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                            elevation: 6,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            clipBehavior: Clip.antiAlias,
                             child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                                child: DataTable(
-                                  headingRowColor: MaterialStateProperty.all(const Color(0xFF39A900)),
-                                  columnSpacing: isSmallScreen ? 15 : 20,
-                                  horizontalMargin: isSmallScreen ? 12 : 24,
-                                  columns: [
-                                    DataColumn(label: Text('ID', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)), numeric: true),
-                                    DataColumn(label: Text('Nombre', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Apellido', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Cédula', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Correo', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Rol', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Acciones', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
-                                  ],
-                                  rows: paginatedStaff.map((user) {
-                                    return DataRow(
-                                      cells: [
-                                        DataCell(Text(user.id.toString(), style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
-                                        DataCell(Text(user.nombre, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
-                                        DataCell(Text(user.apellido, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
-                                        DataCell(Text(user.cedula, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
-                                        DataCell(Text(user.correo, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
-                                        DataCell(Text(user.rol, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
-                                        DataCell(Row(
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.edit, color: Colors.blue),
-                                              onPressed: () => _showAddOrEditDialog(user: user),
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete, color: Colors.red),
-                                              onPressed: () => _showDeleteDialog(user),
-                                            ),
-                                          ],
-                                        )),
-                                      ],
-                                    );
-                                  }).toList(),
+                              scrollDirection: Axis.vertical,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                                  child: DataTable(
+                                    headingRowColor: MaterialStateProperty.all(const Color(0xFF39A900)),
+                                    columnSpacing: isSmallScreen ? 15 : 20,
+                                    horizontalMargin: isSmallScreen ? 12 : 24,
+                                    columns: [
+                                      DataColumn(label: Text('ID', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold)), numeric: true),
+                                      DataColumn(label: Text('Nombre', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Apellido', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Cédula', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Correo', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Rol', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Acciones', style: TextStyle(fontSize: isSmallScreen ? 15 : 16, fontWeight: FontWeight.bold))),
+                                    ],
+                                    rows: paginatedStaff.map((user) {
+                                      return DataRow(
+                                        cells: [
+                                          DataCell(Text(user.id.toString(), style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
+                                          DataCell(Text(user.nombre, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
+                                          DataCell(Text(user.apellido, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
+                                          DataCell(Text(user.cedula, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
+                                          DataCell(Text(user.correo, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
+                                          DataCell(Text(user.rol, style: TextStyle(fontSize: isSmallScreen ? 15 : 16))),
+                                          DataCell(Row(
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                                onPressed: () => _showAddOrEditDialog(user: user),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete, color: Colors.red),
+                                                onPressed: () => _showDeleteDialog(user),
+                                              ),
+                                            ],
+                                          )),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      if (totalPages > 1) Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: paginationControls,
-                      ),
-                    ],
-                  );
+                        if (totalPages > 1) Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: paginationControls,
+                        ),
+                      ],
+                    );
+                  }
                 },
               ),
             ),

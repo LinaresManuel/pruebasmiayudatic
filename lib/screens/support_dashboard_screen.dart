@@ -316,37 +316,25 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('ID: ${ticket.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(ticket.estado),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(ticket.estado ?? 'Abierta', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(ticket.estado),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      (ticket.estado != null && ticket.estado!.isNotEmpty) ? ticket.estado! : 'Abierta',
+                      style: TextStyle(
+                        color: (ticket.estado == 'Abierta' || ticket.estado == null || ticket.estado!.isEmpty)
+                            ? Colors.black
+                            : Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
-                      if (ticket.estado != 'Cerrada')
-                        Container(
-                          width: 32, height: 32,
-                          decoration: BoxDecoration(
-                            color: _colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado)),
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            '${_diasAbierta(ticket.fechaReporte, ticket.estado)}',
-                            style: TextStyle(
-                              color: _textColorSemaforo(_colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado))),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -381,7 +369,29 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                     )
                   else
                     const Text('Sin asignar', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
-                  
+                  if (ticket.estado != 'Cerrada')
+                    Container(
+                      width: 32, height: 32,
+                      margin: const EdgeInsets.only(left: 8),
+                      decoration: BoxDecoration(
+                        color: _colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado)),
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '${_diasAbierta(ticket.fechaReporte, ticket.estado)}',
+                        style: TextStyle(
+                          color: _textColorSemaforo(_colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado))),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
                   TextButton(
                     onPressed: () => _showTicketDetails(ticket),
                     child: const Text('Ver Detalles'),
@@ -619,9 +629,12 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                                         : null,
                                                   ),
                                                   child: Text(
-                                                    ticket.estado ?? 'Abierta',
-                                                    style: const TextStyle(
-                                                      color: Colors.black,
+                                                    (ticket.estado != null && ticket.estado!.isNotEmpty) ? ticket.estado! : 'Abierta',
+                                                    style: TextStyle(
+                                                      color: (ticket.estado == 'Abierta' || ticket.estado == null || ticket.estado!.isEmpty)
+                                                          ? Colors.black
+                                                          : Colors.white,
+                                                      fontSize: 12,
                                                       fontWeight: FontWeight.bold,
                                                     ),
                                                   ),
@@ -730,8 +743,8 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
   Color _getStatusColor(String? status) {
     if (status == 'Cerrada') {
       return Colors.green;
-    } else if (status == 'Abierta') {
-      return const Color.fromARGB(255, 255, 255, 255);
+    } else if (status == 'Abierta' || status == null || status.isEmpty) {
+      return const Color(0xFF039900); // O usa Colors.grey[300] para un gris claro
     } else {
       return Colors.orange;
     }

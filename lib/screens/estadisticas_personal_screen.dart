@@ -197,38 +197,97 @@ class _EstadisticasPersonalScreenState extends State<EstadisticasPersonalScreen>
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 16),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                OutlinedButton.icon(
-                                  onPressed: _selectFechaInicio,
-                                  icon: const Icon(Icons.date_range),
-                                  label: Text(_fechaInicioTemp == null ? 'Fecha inicio' : DateFormat('dd/MM/yyyy').format(_fechaInicioTemp!)),
-                                ),
-                                const SizedBox(width: 12),
-                                OutlinedButton.icon(
-                                  onPressed: _selectFechaFin,
-                                  icon: const Icon(Icons.date_range),
-                                  label: Text(_fechaFinTemp == null ? 'Fecha fin' : DateFormat('dd/MM/yyyy').format(_fechaFinTemp!)),
-                                ),
-                                const SizedBox(width: 12),
-                                ElevatedButton.icon(
-                                  onPressed: _aplicarFiltro,
-                                  icon: const Icon(Icons.search),
-                                  label: const Text('Buscar'),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[400], foregroundColor: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton.icon(
-                            onPressed: _exportarExcel,
-                            icon: const Icon(Icons.download),
-                            label: const Text('Exportar a Excel'),
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isMobile = constraints.maxWidth < 600;
+                              if (isMobile) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: _selectFechaInicio,
+                                            icon: const Icon(Icons.date_range),
+                                            label: Text(_fechaInicioTemp == null ? 'Fecha inicio' : DateFormat('dd/MM/yyyy').format(_fechaInicioTemp!)),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: OutlinedButton.icon(
+                                            onPressed: _selectFechaFin,
+                                            icon: const Icon(Icons.date_range),
+                                            label: Text(_fechaFinTemp == null ? 'Fecha fin' : DateFormat('dd/MM/yyyy').format(_fechaFinTemp!)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: _aplicarFiltro,
+                                            icon: const Icon(Icons.search),
+                                            label: const Text('Buscar'),
+                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[400], foregroundColor: Colors.white),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: _exportarExcel,
+                                            icon: const Icon(Icons.download),
+                                            label: const Text('Exportar a Excel'),
+                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              } else {
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    OutlinedButton.icon(
+                                      onPressed: _selectFechaInicio,
+                                      icon: const Icon(Icons.date_range),
+                                      label: Text(_fechaInicioTemp == null ? 'Fecha inicio' : DateFormat('dd/MM/yyyy').format(_fechaInicioTemp!)),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    OutlinedButton.icon(
+                                      onPressed: _selectFechaFin,
+                                      icon: const Icon(Icons.date_range),
+                                      label: Text(_fechaFinTemp == null ? 'Fecha fin' : DateFormat('dd/MM/yyyy').format(_fechaFinTemp!)),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: _aplicarFiltro,
+                                            icon: const Icon(Icons.search),
+                                            label: const Text('Buscar'),
+                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[400], foregroundColor: Colors.white),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: ElevatedButton.icon(
+                                            onPressed: _exportarExcel,
+                                            icon: const Icon(Icons.download),
+                                            label: const Text('Exportar a Excel'),
+                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              }
+                            },
                           ),
                           const SizedBox(height: 24),
                           Expanded(
