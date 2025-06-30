@@ -268,11 +268,11 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                 SizedBox(width: isSmallScreen ? 8 : 16),
                 Image.asset(
                   'assets/sena_logo.png',
-                  height: isSmallScreen ? 40 : 120,
+                  height: isSmallScreen ? 60 : 120,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      width: isSmallScreen ? 40 : 120,
-                      height: isSmallScreen ? 40 : 120,
+                      width: isSmallScreen ? 60 : 120,
+                      height: isSmallScreen ? 60 : 120,
                       color: Colors.grey[800],
                       child: const Icon(Icons.business, color: Colors.white),
                     );

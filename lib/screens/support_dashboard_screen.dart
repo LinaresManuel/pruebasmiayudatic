@@ -299,109 +299,200 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
   }
 
   Widget _buildMobileTicketCard(Ticket ticket, bool isSmallScreen) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(
-          context,
-          '/case-details',
-          arguments: {'caseId': ticket.id.toString()},
-        ),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+    return Stack(
+      children: [
+        Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: InkWell(
+            onTap: () => Navigator.pushNamed(
+              context,
+              '/case-details',
+              arguments: {'caseId': ticket.id.toString()},
+            ),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ID: ${ticket.id}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(ticket.estado),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      (ticket.estado != null && ticket.estado!.isNotEmpty) ? ticket.estado! : 'Abierta',
-                      style: TextStyle(
-                        color: (ticket.estado == 'Abierta' || ticket.estado == null || ticket.estado!.isEmpty)
-                            ? Colors.black
-                            : Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  Row(
+                    children: [
+                      const Text('ID: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(ticket.id.toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${ticket.dependencia} • ${DateFormat('dd/MM/yyyy').format(ticket.fechaReporte)}',
-                style: TextStyle(color: Colors.grey[700], fontSize: 13),
-              ),
-              const Divider(height: 24),
-              Text(
-                ticket.descripcion,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (ticket.personalAsignado != null)
-                    Flexible(
-                      child: Chip(
-                        avatar: const Icon(Icons.person, size: 16),
-                        label: Text(ticket.personalAsignado!, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis,),
-                        backgroundColor: Colors.grey[200],
+                  const SizedBox(width: 8),
+                  Row(
+                    children: [
+                      const Text('Estado: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(ticket.estado),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          (ticket.estado != null && ticket.estado!.isNotEmpty) ? ticket.estado! : 'Abierta',
+                          style: TextStyle(
+                            color: (ticket.estado == 'Abierta' || ticket.estado == null || ticket.estado!.isEmpty)
+                                ? Colors.black
+                                : Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    )
-                  else
-                    const Text('Sin asignar', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
-                  if (ticket.estado != 'Cerrada')
-                    Container(
-                      width: 32, height: 32,
-                      margin: const EdgeInsets.only(left: 8),
-                      decoration: BoxDecoration(
-                        color: _colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado)),
-                        shape: BoxShape.circle,
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Text('Solicitante: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Expanded(child: Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Text('Dependencia: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Expanded(child: Text(ticket.dependencia)),
+                      const Text('Fecha: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(DateFormat('dd/MM/yyyy').format(ticket.fechaReporte)),
+                    ],
+                  ),
+                  const Divider(height: 24),
+                  const Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    ticket.descripcion,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: 'Tipo de Servicio',
+                        labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal, fontSize: 14),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: Colors.teal.shade100),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: Colors.teal.shade100),
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${_diasAbierta(ticket.fechaReporte, ticket.estado)}',
-                        style: TextStyle(
-                          color: _textColorSemaforo(_colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado))),
-                          fontWeight: FontWeight.bold,
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: ticket.tipoServicio,
+                          hint: const Text('Seleccionar'),
+                          isExpanded: true,
+                          icon: const Icon(Icons.arrow_drop_down_rounded, color: Colors.teal),
+                          items: _serviceTypes.map((type) {
+                            return DropdownMenuItem<String>(
+                              value: type['nombre_tipo_servicio'],
+                              child: Text(type['nombre_tipo_servicio']),
+                            );
+                          }).toList(),
+                          onChanged: ticket.estado != 'Cerrada'
+                              ? (String? newValue) => _assignTicket(ticket, newValue, null)
+                              : null,
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                     ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: 'Personal Técnico',
+                        labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal, fontSize: 14),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: Colors.teal.shade100),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: Colors.teal.shade100),
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: ticket.personalAsignado,
+                          hint: const Text('Seleccionar'),
+                          isExpanded: true,
+                          icon: const Icon(Icons.arrow_drop_down_rounded, color: Colors.teal),
+                          items: _supportStaff.map((staff) {
+                            return DropdownMenuItem<String>(
+                              value: staff['nombre_completo'],
+                              child: Text(staff['nombre_completo']),
+                            );
+                          }).toList(),
+                          onChanged: (ticket.estado != 'Cerrada' && ticket.tipoServicio != null)
+                              ? (String? newValue) => _assignTicket(ticket, null, newValue)
+                              : null,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => _showTicketDetails(ticket),
+                        child: const Text('Ver Detalles'),
+                      )
+                    ],
+                  ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => _showTicketDetails(ticket),
-                    child: const Text('Ver Detalles'),
-                  )
-                ],
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+        // Retraso en días en la esquina superior derecha
+        if (ticket.estado != 'Cerrada')
+          Positioned(
+            top: 8,
+            right: 24,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: _colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado)),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 4,
+                    offset: const Offset(2, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '${_diasAbierta(ticket.fechaReporte, ticket.estado)}',
+                style: TextStyle(
+                  color: _textColorSemaforo(_colorSemaforo(_diasAbierta(ticket.fechaReporte, ticket.estado))),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -427,11 +518,11 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                 SizedBox(width: isSmallScreen ? 8 : 16),
                 Image.asset(
                   'assets/sena_logo.png',
-                  height: isSmallScreen ? 40 : 120,
+                  height: isSmallScreen ? 60 : 120,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      width: isSmallScreen ? 40 : 120,
-                      height: isSmallScreen ? 40 : 120,
+                      width: isSmallScreen ? 60 : 120,
+                      height: isSmallScreen ? 60 : 120,
                       color: Colors.grey[800],
                       child: const Icon(Icons.business, color: Colors.white),
                     );

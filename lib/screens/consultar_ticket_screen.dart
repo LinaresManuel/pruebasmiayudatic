@@ -75,11 +75,11 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
                 SizedBox(width: isSmallScreen ? 8 : 16),
                 Image.asset(
                   'assets/sena_logo.png',
-                  height: isSmallScreen ? 40 : 120,
+                  height: isSmallScreen ? 60 : 120,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      width: isSmallScreen ? 40 : 120,
-                      height: isSmallScreen ? 40 : 120,
+                      width: isSmallScreen ? 60 : 120,
+                      height: isSmallScreen ? 60 : 120,
                       color: Colors.grey[800],
                       child: const Icon(Icons.business, color: Colors.white),
                     );
@@ -199,105 +199,108 @@ class _ConsultarTicketScreenState extends State<ConsultarTicketScreen> {
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Table(
-                          columnWidths: const {
-                            0: IntrinsicColumnWidth(),
-                            1: FlexColumnWidth(),
-                          },
-                          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                          children: [
-                            TableRow(children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: Text('ID:', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Text(ticket.id.toString()),
-                              ),
-                            ]),
-                            TableRow(children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: Text('Fecha:', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Text(DateFormat('dd/MM/yyyy').format(ticket.fechaReporte)),
-                              ),
-                            ]),
-                            TableRow(children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: Text('Solicitante:', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}'),
-                              ),
-                            ]),
-                            TableRow(children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: Text('Dependencia:', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Text(ticket.dependencia),
-                              ),
-                            ]),
-                            TableRow(children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: Text('Estado:', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: _getStatusColor(ticket.estado),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(ticket.estado ?? 'No asignado', style: const TextStyle(color: Colors.white)),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Table(
+                            columnWidths: const {
+                              0: IntrinsicColumnWidth(),
+                              1: FlexColumnWidth(),
+                            },
+                            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                            children: [
+                              TableRow(children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4),
+                                  child: Text('ID:', style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
-                              ),
-                            ]),
-                            TableRow(children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: Text('Tipo de Servicio:', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Text(ticket.tipoServicio ?? 'No asignado'),
-                              ),
-                            ]),
-                            TableRow(children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 4),
-                                child: Text('Personal Asignado:', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4),
-                                child: Text(ticket.personalAsignado ?? 'No asignado'),
-                              ),
-                            ]),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
-                        Text(ticket.descripcion),
-                        const Divider(),
-                        if (ticket.fechaCreacion != null)
-                          Text('Fecha de Creación: 	${DateFormat('dd/MM/yyyy HH:mm').format(ticket.fechaCreacion!)}'),
-                        if (ticket.fechaCierre != null)
-                          Text('Fecha de Cierre: 	${DateFormat('dd/MM/yyyy HH:mm').format(ticket.fechaCierre!)}'),
-                      ],
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(ticket.id.toString()),
+                                ),
+                              ]),
+                              TableRow(children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4),
+                                  child: Text('Fecha:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(DateFormat('dd/MM/yyyy').format(ticket.fechaReporte)),
+                                ),
+                              ]),
+                              TableRow(children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4),
+                                  child: Text('Solicitante:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text('${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}'),
+                                ),
+                              ]),
+                              TableRow(children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4),
+                                  child: Text('Dependencia:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(ticket.dependencia),
+                                ),
+                              ]),
+                              TableRow(children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4),
+                                  child: Text('Estado:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: _getStatusColor(ticket.estado),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(ticket.estado ?? 'No asignado', style: const TextStyle(color: Colors.white)),
+                                  ),
+                                ),
+                              ]),
+                              TableRow(children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4),
+                                  child: Text('Tipo de Servicio:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(ticket.tipoServicio ?? 'No asignado'),
+                                ),
+                              ]),
+                              TableRow(children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4),
+                                  child: Text('Personal Asignado:', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Text(ticket.personalAsignado ?? 'No asignado'),
+                                ),
+                              ]),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text(ticket.descripcion),
+                          const Divider(),
+                          if (ticket.fechaCreacion != null)
+                            Text('Fecha de Creación: 	${DateFormat('dd/MM/yyyy HH:mm').format(ticket.fechaCreacion!)}'),
+                          if (ticket.fechaCierre != null)
+                            Text('Fecha de Cierre: 	${DateFormat('dd/MM/yyyy HH:mm').format(ticket.fechaCierre!)}'),
+                        ],
+                      ),
                     ),
                   ),
                 ),
