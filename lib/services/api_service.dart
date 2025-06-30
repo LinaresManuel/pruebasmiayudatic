@@ -321,4 +321,25 @@ class ApiService {
       throw Exception(data['error'] ?? 'Error al generar el hash de la contraseña');
     }
   }
+
+  Future<void> enviarCorreoAsignacion({
+    required int idSolicitud,
+    required int idPersonalAsignado,
+    required String tipoServicio,
+  }) async {
+    final url = Uri.parse('$baseUrl/correoasigna.php');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'id_solicitud': idSolicitud,
+        'id_personal_ti_asignado': idPersonalAsignado,
+        'tipo_servicio': tipoServicio,
+      }),
+    );
+    final data = jsonDecode(response.body);
+    if (data['success'] != true) {
+      throw Exception(data['message'] ?? 'Error al enviar correo de asignación');
+    }
+  }
 } 

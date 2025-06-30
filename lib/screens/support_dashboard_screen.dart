@@ -211,26 +211,55 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
 
     try {
       final updates = <String, dynamic>{};
-      
+      String? tipoServicioNombre = ticket.tipoServicio;
+
       if (serviceType != null) {
         final serviceTypeData = _serviceTypes.firstWhere(
           (type) => type['nombre_tipo_servicio'] == serviceType,
           orElse: () => throw Exception('Tipo de servicio no encontrado'),
         );
         updates['id_tipo_servicio'] = int.parse(serviceTypeData['id_tipo_servicio'].toString());
+        tipoServicioNombre = serviceTypeData['nombre_tipo_servicio'];
       }
-      
+
+      int? idPersonalAsignado;
       if (staffName != null) {
+        if (tipoServicioNombre == null) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Primero seleccione el tipo de servicio antes de asignar técnico.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          return;
+        }
         final staffData = _supportStaff.firstWhere(
           (staff) => staff['nombre_completo'] == staffName,
           orElse: () => throw Exception('Personal no encontrado'),
         );
         updates['id_personal_ti_asignado'] = int.parse(staffData['id_usuario'].toString());
+        idPersonalAsignado = int.parse(staffData['id_usuario'].toString());
       }
 
-      print('Enviando actualización: $updates'); // Log para debug
       await _apiService.updateTicket(ticket.id!, updates);
       await _loadTickets();
+
+      // Si se asignó técnico y hay tipo de servicio, enviar correo
+      if (idPersonalAsignado != null && tipoServicioNombre != null) {
+        await _apiService.enviarCorreoAsignacion(
+          idSolicitud: ticket.id!,
+          idPersonalAsignado: idPersonalAsignado,
+          tipoServicio: tipoServicioNombre,
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Correo de asignación enviado al técnico'),
+            backgroundColor: Colors.blue,
+          ),
+        );
+      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -557,7 +586,7 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                           if (!isLayoutSmall) const DataColumn(label: Text('Dependencia', style: TextStyle(fontWeight: FontWeight.bold))),
                                           const DataColumn(label: Text('Descripción', style: TextStyle(fontWeight: FontWeight.bold))),
                                           const DataColumn(label: Text('Estado', style: TextStyle(fontWeight: FontWeight.bold))),
-                                          const DataColumn(label: Text('Días Abierta', style: TextStyle(fontWeight: FontWeight.bold))),
+                                          const DataColumn(label: Text('Retraso en días', style: TextStyle(fontWeight: FontWeight.bold))),
                                           if (!isLayoutMedium) const DataColumn(label: Text('Tipo de Servicio', style: TextStyle(fontWeight: FontWeight.bold))),
                                           const DataColumn(label: Text('Personal Asignado', style: TextStyle(fontWeight: FontWeight.bold))),
                                           const DataColumn(label: Text('Acciones', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -632,16 +661,23 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                                   ),
                                                 ),
                                               DataCell(
-                                                DropdownButton<String>(
-                                                  value: ticket.personalAsignado,
-                                                  hint: const Text('Asignar'),
-                                                  items: _supportStaff.map((staff) {
-                                                    return DropdownMenuItem<String>(
-                                                      value: staff['nombre_completo'],
-                                                      child: Text(staff['nombre_completo']),
-                                                    );
-                                                  }).toList(),
-                                                  onChanged: ticket.estado != 'Cerrada' ? (String? newValue) => _assignTicket(ticket, null, newValue) : null,
+                                                Tooltip(
+                                                  message: (ticket.tipoServicio == null)
+                                                      ? 'Para asignar el personal técnico debe seleccionar primero el tipo de servicio'
+                                                      : '',
+                                                  child: DropdownButton<String>(
+                                                    value: ticket.personalAsignado,
+                                                    hint: const Text('Asignar'),
+                                                    items: _supportStaff.map((staff) {
+                                                      return DropdownMenuItem<String>(
+                                                        value: staff['nombre_completo'],
+                                                        child: Text(staff['nombre_completo']),
+                                                      );
+                                                    }).toList(),
+                                                    onChanged: (ticket.estado != 'Cerrada' && ticket.tipoServicio != null)
+                                                        ? (String? newValue) => _assignTicket(ticket, null, newValue)
+                                                        : null,
+                                                  ),
                                                 ),
                                               ),
                                               DataCell(
