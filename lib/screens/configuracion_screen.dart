@@ -412,31 +412,58 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                             itemBuilder: (context, index) {
                               final user = paginatedStaff[index];
                               return Card(
-                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                 elevation: 4,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
+                                  padding: const EdgeInsets.all(18.0),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          Icon(Icons.person, color: Colors.teal[700]),
-                                          const SizedBox(width: 8),
+                                          CircleAvatar(
+                                            backgroundColor: Colors.teal[700],
+                                            child: Text(user.nombre.isNotEmpty ? user.nombre[0].toUpperCase() : '?', style: const TextStyle(color: Colors.white)),
+                                          ),
+                                          const SizedBox(width: 12),
                                           Expanded(
                                             child: Text(
                                               '${user.nombre} ${user.apellido}',
                                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                              overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text('Cédula: ${user.cedula}', style: const TextStyle(fontSize: 15)),
-                                      Text('Correo: ${user.correo}', style: const TextStyle(fontSize: 15)),
-                                      Text('Rol: ${user.rol}', style: const TextStyle(fontSize: 15)),
-                                      const SizedBox(height: 12),
+                                      const Divider(height: 24, thickness: 1.2),
+                                      Wrap(
+                                        runSpacing: 8,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.badge, size: 20, color: Colors.grey),
+                                              const SizedBox(width: 8),
+                                              Expanded(child: Text('Cédula: ${user.cedula}', style: const TextStyle(fontSize: 15))),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.email, size: 20, color: Colors.grey),
+                                              const SizedBox(width: 8),
+                                              Expanded(child: Text('Correo: ${user.correo}', style: const TextStyle(fontSize: 15))),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.security, size: 20, color: Colors.grey),
+                                              const SizedBox(width: 8),
+                                              Expanded(child: Text('Rol: ${user.rol}', style: const TextStyle(fontSize: 15))),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 14),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [

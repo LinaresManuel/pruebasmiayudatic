@@ -4,6 +4,7 @@ import '../models/ticket_model.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import '../widgets/app_drawer.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String caseId;
@@ -230,40 +231,52 @@ class _DetailsScreenState extends State<DetailsScreen> {
       appBar: AppBar(
         toolbarHeight: 80,
         backgroundColor: const Color(0xFF04324D),
-        flexibleSpace: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+        automaticallyImplyLeading: false,
+        flexibleSpace: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 400;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
                 children: [
+                  Builder(
+                    builder: (context) => IconButton(
+                      icon: const Icon(Icons.menu, color: Colors.white),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    ),
+                  ),
                   Image.asset(
                     'assets/sena_logo.png',
-                    height: 50,
+                    height: isMobile ? 32 : 50,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        width: 50,
-                        height: 50,
+                        width: isMobile ? 32 : 50,
+                        height: isMobile ? 32 : 50,
                         color: Colors.grey[800],
                         child: const Icon(Icons.business, color: Colors.white),
                       );
                     },
                   ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Servicios TIC Sena Regional Guainía',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Servicios TIC Sena Regional Guainía',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isMobile ? 14 : 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
+      drawer: const AppDrawer(currentRoute: '/details'),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -470,125 +483,217 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _nombreContratistaController,
-                                enabled:
-                                    false, // Deshabilitado porque viene de la asignación
-                                decoration: const InputDecoration(
-                                  labelText: 'Nombre del Contratista',
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(Icons.person),
+                              // CAJA: Nombre del Contratista
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.teal.shade50,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.teal.shade300, width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.teal.withOpacity(0.18),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.7),
+                                      blurRadius: 0,
+                                      offset: const Offset(-2, -2),
+                                    ),
+                                  ],
+                                ),
+                                margin: const EdgeInsets.only(bottom: 14),
+                                child: TextFormField(
+                                  controller: _nombreContratistaController,
+                                  enabled: false,
+                                  decoration: InputDecoration(
+                                    labelText: 'Nombre del Contratista',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: const Icon(Icons.person),
+                                    filled: true,
+                                    fillColor: Colors.transparent,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+                                  ),
+                                  style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
                                 ),
                               ),
-                              const SizedBox(height: 12),
-                              TextFormField(
-                                controller: _contactoContratistaController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Teléfono / Extensión',
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(Icons.phone),
+                              // CAJA: Teléfono / Extensión
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.teal.shade50,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.teal.shade300, width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.teal.withOpacity(0.18),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.7),
+                                      blurRadius: 0,
+                                      offset: const Offset(-2, -2),
+                                    ),
+                                  ],
+                                ),
+                                margin: const EdgeInsets.only(bottom: 14),
+                                child: TextFormField(
+                                  controller: _contactoContratistaController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Teléfono / Extensión',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: const Icon(Icons.phone),
+                                    filled: true,
+                                    fillColor: Colors.transparent,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+                                  ),
+                                  style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                              // CAJA: Descripción de la Solución
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.teal.shade50,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.teal.shade300, width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.teal.withOpacity(0.18),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.7),
+                                      blurRadius: 0,
+                                      offset: const Offset(-2, -2),
+                                    ),
+                                  ],
+                                ),
+                                margin: const EdgeInsets.only(bottom: 2),
+                                child: TextFormField(
+                                  controller: _descripcionSolucionController,
+                                  maxLength: 500,
+                                  decoration: InputDecoration(
+                                    labelText: 'Descripción de la Solución',
+                                    hintText: 'Explique cómo se resolvió el problema',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: const Icon(Icons.description),
+                                    filled: true,
+                                    fillColor: Colors.transparent,
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+                                    counterText: '', // Oculta el contador por defecto
+                                  ),
+                                  maxLines: 5,
+                                  minLines: 3,
+                                  style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+                                  onChanged: (_) {
+                                    setState(() {});
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8, bottom: 12),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '${500 - _descripcionSolucionController.text.length} caracteres restantes',
+                                      style: TextStyle(
+                                        color: (500 - _descripcionSolucionController.text.length) < 50 ? Colors.red : Colors.grey.shade700,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _descripcionSolucionController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Descripción de la Solución',
-                                  hintText:
-                                      'Explique cómo se resolvió el problema',
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(Icons.description),
-                                ),
-                                maxLines: 5,
-                                minLines: 3,
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  ElevatedButton.icon(
-                                    onPressed: _pickFiles,
-                                    icon: const Icon(Icons.attach_file),
-                                    label: const Text('Adjuntar Evidencia'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue.shade700,
-                                      foregroundColor: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  if (_evidenciasCargadas.isNotEmpty)
-                                    Expanded(
-                                      child: Wrap(
-                                        spacing: 6,
-                                        children:
-                                            _evidenciasCargadas.map((file) {
-                                          return Chip(
-                                            label: Text(file),
-                                            avatar: const Icon(
-                                              Icons.insert_drive_file,
-                                              size: 16,
-                                            ),
-                                            backgroundColor:
-                                                Colors.blue.shade50,
-                                          );
-                                        }).toList(),
+                              // BOTONES DE ACCIÓN Y EVIDENCIAS
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final isMobile = constraints.maxWidth < 600;
+                                  final buttonSpacing = isMobile ? const SizedBox(height: 12) : const SizedBox(width: 12);
+                                  final List<Widget> buttonList = [
+                                    ElevatedButton.icon(
+                                      onPressed: _pickFiles,
+                                      icon: const Icon(Icons.attach_file),
+                                      label: const Text('Adjuntar Evidencia'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue.shade700,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        elevation: 2,
                                       ),
                                     ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      OutlinedButton.icon(
-                                        onPressed: () {
-                                          if (Navigator.of(context).canPop()) {
-                                            Navigator.of(context).pop();
-                                          } else {
-                                            Navigator.pushReplacementNamed(
-                                                context, '/support-dashboard');
-                                          }
-                                        },
-                                        icon: const Icon(Icons.cancel),
-                                        label: const Text('Cancelar'),
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.red,
+                                    if (_evidenciasCargadas.isNotEmpty)
+                                      Flexible(
+                                        child: Wrap(
+                                          spacing: 6,
+                                          children: _evidenciasCargadas.map((file) {
+                                            return Chip(
+                                              label: Text(file),
+                                              avatar: const Icon(
+                                                Icons.insert_drive_file,
+                                                size: 16,
+                                              ),
+                                              backgroundColor: Colors.blue.shade50,
+                                            );
+                                          }).toList(),
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
-                                      OutlinedButton.icon(
-                                        onPressed: () {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Borrador guardado (simulado)!'),
-                                            ),
-                                          );
-                                        },
-                                        icon: const Icon(Icons.save_alt),
-                                        label: const Text('Guardar Borrador'),
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.teal,
-                                        ),
+                                    if (!isMobile) buttonSpacing,
+                                    OutlinedButton.icon(
+                                      onPressed: () {
+                                        if (Navigator.of(context).canPop()) {
+                                          Navigator.of(context).pop();
+                                        } else {
+                                          Navigator.pushReplacementNamed(context, '/support-dashboard');
+                                        }
+                                      },
+                                      icon: const Icon(Icons.cancel),
+                                      label: const Text('Cancelar'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.red,
+                                        side: const BorderSide(color: Colors.red),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Center(
-                                    child: ElevatedButton.icon(
+                                    ),
+                                    if (!isMobile) buttonSpacing,
+                                    OutlinedButton.icon(
+                                      onPressed: () {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Borrador guardado (simulado)!'),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(Icons.save_alt),
+                                      label: const Text('Guardar Borrador'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.teal,
+                                        side: const BorderSide(color: Colors.teal),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                    ),
+                                    if (!isMobile) buttonSpacing,
+                                    ElevatedButton.icon(
                                       onPressed: _showConfirmationDialog,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.teal,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 24,
-                                          vertical: 12,
-                                        ),
+                                        backgroundColor: Colors.green.shade700,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        elevation: 2,
                                       ),
-                                      icon: const Icon(Icons.check_circle,
-                                          color: Colors.white),
+                                      icon: const Icon(Icons.check_circle, color: Colors.white),
                                       label: const Text(
                                         'Cerrar Caso',
                                         style: TextStyle(
@@ -597,8 +702,22 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ];
+                                  if (isMobile) {
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        ...buttonList.expand((w) => [w, buttonSpacing]).toList()..removeLast(),
+                                      ],
+                                    );
+                                  } else {
+                                    return Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: buttonList,
+                                    );
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -631,3 +750,4 @@ class _DetailsScreenState extends State<DetailsScreen> {
     );
   }
 }
+

@@ -265,22 +265,18 @@ class _EstadisticasPersonalScreenState extends State<EstadisticasPersonalScreen>
                                     const SizedBox(width: 12),
                                     Row(
                                       children: [
-                                        Expanded(
-                                          child: ElevatedButton.icon(
-                                            onPressed: _aplicarFiltro,
-                                            icon: const Icon(Icons.search),
-                                            label: const Text('Buscar'),
-                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[400], foregroundColor: Colors.white),
-                                          ),
+                                        ElevatedButton.icon(
+                                          onPressed: _aplicarFiltro,
+                                          icon: const Icon(Icons.search),
+                                          label: const Text('Buscar'),
+                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue[400], foregroundColor: Colors.white),
                                         ),
                                         const SizedBox(width: 8),
-                                        Expanded(
-                                          child: ElevatedButton.icon(
-                                            onPressed: _exportarExcel,
-                                            icon: const Icon(Icons.download),
-                                            label: const Text('Exportar a Excel'),
-                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
-                                          ),
+                                        ElevatedButton.icon(
+                                          onPressed: _exportarExcel,
+                                          icon: const Icon(Icons.download),
+                                          label: const Text('Exportar a Excel'),
+                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green[400], foregroundColor: Colors.white),
                                         ),
                                       ],
                                     ),
@@ -291,59 +287,61 @@ class _EstadisticasPersonalScreenState extends State<EstadisticasPersonalScreen>
                           ),
                           const SizedBox(height: 24),
                           Expanded(
-                            child: BarChart(
-                              BarChartData(
-                                alignment: BarChartAlignment.spaceAround,
-                                maxY: (_cerradosPorPersonal.values.isEmpty ? 1 : _cerradosPorPersonal.values.reduce((a, b) => a > b ? a : b).toDouble() + 1),
-                                barTouchData: BarTouchData(enabled: true),
-                                titlesData: FlTitlesData(
-                                  leftTitles: AxisTitles(
-                                    sideTitles: SideTitles(showTitles: true, reservedSize: 28),
-                                  ),
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      getTitlesWidget: (double value, TitleMeta meta) {
-                                        final idx = value.toInt();
-                                        if (idx < 0 || idx >= _cerradosPorPersonal.keys.length) return const SizedBox();
-                                        final nombre = _cerradosPorPersonal.keys.elementAt(idx);
-                                        return Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
-                                          child: Text(
-                                            nombre.length > 10 ? nombre.substring(0, 10) + '…' : nombre,
-                                            style: const TextStyle(fontSize: 12),
-                                            overflow: TextOverflow.ellipsis,
+                            child: _cerradosPorPersonal.isEmpty
+                                ? const Center(child: Text('No hay datos para mostrar.'))
+                                : BarChart(
+                                    BarChartData(
+                                      alignment: BarChartAlignment.spaceAround,
+                                      maxY: (_cerradosPorPersonal.values.isEmpty ? 1 : _cerradosPorPersonal.values.reduce((a, b) => a > b ? a : b).toDouble() + 1),
+                                      barTouchData: BarTouchData(enabled: true),
+                                      titlesData: FlTitlesData(
+                                        leftTitles: AxisTitles(
+                                          sideTitles: SideTitles(showTitles: true, reservedSize: 28),
+                                        ),
+                                        bottomTitles: AxisTitles(
+                                          sideTitles: SideTitles(
+                                            showTitles: true,
+                                            getTitlesWidget: (double value, TitleMeta meta) {
+                                              final idx = value.toInt();
+                                              if (idx < 0 || idx >= _cerradosPorPersonal.keys.length) return const SizedBox();
+                                              final nombre = _cerradosPorPersonal.keys.elementAt(idx);
+                                              return Padding(
+                                                padding: const EdgeInsets.only(top: 8.0),
+                                                child: Text(
+                                                  nombre.length > 10 ? nombre.substring(0, 10) + '…' : nombre,
+                                                  style: const TextStyle(fontSize: 12),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              );
+                                            },
                                           ),
+                                        ),
+                                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                      ),
+                                      borderData: FlBorderData(show: false),
+                                      barGroups: _cerradosPorPersonal.entries
+                                          .toList()
+                                          .asMap()
+                                          .entries
+                                          .map((entry) {
+                                        final idx = entry.key;
+                                        final e = entry.value;
+                                        final color = _barColors[idx % _barColors.length];
+                                        return BarChartGroupData(
+                                          x: idx,
+                                          barRods: [
+                                            BarChartRodData(
+                                              toY: e.value.toDouble(),
+                                              color: color,
+                                              width: 28,
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                          ],
                                         );
-                                      },
+                                      }).toList(),
                                     ),
                                   ),
-                                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                ),
-                                borderData: FlBorderData(show: false),
-                                barGroups: _cerradosPorPersonal.entries
-                                    .toList()
-                                    .asMap()
-                                    .entries
-                                    .map((entry) {
-                                  final idx = entry.key;
-                                  final e = entry.value;
-                                  final color = _barColors[idx % _barColors.length];
-                                  return BarChartGroupData(
-                                    x: idx,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: e.value.toDouble(),
-                                        color: color,
-                                        width: 28,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
                           ),
                           const SizedBox(height: 24),
                           Wrap(
