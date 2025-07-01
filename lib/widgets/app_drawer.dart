@@ -91,6 +91,19 @@ class AppDrawer extends StatelessWidget {
               }
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.bar_chart),
+            title: const Text('Estadísticas Dependencias'),
+            selected: currentRoute == '/estadisticas-dependencias',
+            selectedTileColor: Colors.cyan.withOpacity(0.1),
+            onTap: () {
+              if (currentRoute == '/estadisticas-dependencias') {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacementNamed(context, '/estadisticas-dependencias');
+              }
+            },
+          ),
           const Divider(),
           if (user != null && (user.rol == 'admin' || user.rol == 'Administrador' || user.rol == '2'))
             ListTile(

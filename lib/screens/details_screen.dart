@@ -507,7 +507,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   controller: _nombreContratistaController,
                                   enabled: false,
                                   decoration: InputDecoration(
-                                    labelText: 'Nombre del Contratista',
+                                    labelText: 'Solución del Técnico:',
+                                    hintText: 'Solución del Técnico',
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(16),
                                       borderSide: BorderSide.none,
@@ -663,23 +664,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                       style: OutlinedButton.styleFrom(
                                         foregroundColor: Colors.red,
                                         side: const BorderSide(color: Colors.red),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      ),
-                                    ),
-                                    if (!isMobile) buttonSpacing,
-                                    OutlinedButton.icon(
-                                      onPressed: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Borrador guardado (simulado)!'),
-                                          ),
-                                        );
-                                      },
-                                      icon: const Icon(Icons.save_alt),
-                                      label: const Text('Guardar Borrador'),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: Colors.teal,
-                                        side: const BorderSide(color: Colors.teal),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                       ),
                                     ),
