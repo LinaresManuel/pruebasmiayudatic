@@ -669,7 +669,17 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                     ),
                                     if (!isMobile) buttonSpacing,
                                     ElevatedButton.icon(
-                                      onPressed: _showConfirmationDialog,
+                                      onPressed: () {
+                                        if (_ticketDetails?.personalAsignado == null || _ticketDetails!.personalAsignado!.isEmpty) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('Debe seleccionar un técnico antes de cerrar el caso.'),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        _showConfirmationDialog();
+                                      },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Colors.green.shade700,
                                         foregroundColor: Colors.white,
