@@ -342,4 +342,35 @@ class ApiService {
       throw Exception(data['message'] ?? 'Error al enviar correo de asignación');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getComentariosSolicitud(int idSolicitud) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/comentarios_solicitud.php?id_solicitud=$idSolicitud'));
+      final data = jsonDecode(response.body);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      }
+      throw Exception('Error al obtener los comentarios');
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  Future<bool> addComentarioSolicitud(int idSolicitud, int idUsuario, String comentario) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/comentarios_solicitud.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'id_solicitud': idSolicitud,
+          'id_usuario_comentario': idUsuario,
+          'comentario': comentario,
+        }),
+      );
+      final data = jsonDecode(response.body);
+      return data['success'] == true;
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
 } 

@@ -7,6 +7,161 @@ import 'package:intl/intl.dart';
 import './details_screen.dart';
 import '../widgets/app_drawer.dart';
 
+class ComentariosModal extends StatefulWidget {
+  final Ticket ticket;
+  final ApiService? apiService;
+  const ComentariosModal({Key? key, required this.ticket, this.apiService}) : super(key: key);
+
+  @override
+  State<ComentariosModal> createState() => _ComentariosModalState();
+}
+
+class _ComentariosModalState extends State<ComentariosModal> {
+  List<Map<String, dynamic>> tecnicos = [];
+  List<Map<String, dynamic>> comentarios = [];
+  String? tecnicoSeleccionado;
+  TextEditingController comentarioController = TextEditingController();
+  bool isSaving = false;
+  bool isLoading = true;
+  String? errorMsg;
+
+  ApiService get _apiService => widget.apiService ?? ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    cargarDatos();
+  }
+
+  Future<void> cargarDatos() async {
+    try {
+      tecnicos = await _apiService.getSupportStaff().timeout(const Duration(seconds: 10));
+      comentarios = await _apiService.getComentariosSolicitud(widget.ticket.id!).timeout(const Duration(seconds: 10));
+      setState(() { isLoading = false; });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMsg = 'Error al cargar los datos: ' + e.toString();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const AlertDialog(
+        content: SizedBox(height: 100, child: Center(child: CircularProgressIndicator())),
+      );
+    }
+    if (errorMsg != null) {
+      return AlertDialog(
+        title: const Text('Error'),
+        content: Text(errorMsg!),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      );
+    }
+    return AlertDialog(
+      title: Text('Comentarios de la Solicitud #${widget.ticket.id}'),
+      content: SizedBox(
+        width: 400,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (comentarios.isEmpty)
+              const Text('No hay comentarios aún.'),
+            if (comentarios.isNotEmpty)
+              SizedBox(
+                height: 150,
+                child: ListView.builder(
+                  itemCount: comentarios.length,
+                  itemBuilder: (context, index) {
+                    final c = comentarios[index];
+                    return ListTile(
+                      leading: const Icon(Icons.person),
+                      title: Text('${c['nombre_tecnico'] ?? (c['nombre'] ?? '') + ' ' + (c['apellido'] ?? '')}'),
+                      subtitle: Text(c['comentario'] ?? ''),
+                      trailing: Text(c['fecha_comentario'] ?? ''),
+                    );
+                  },
+                ),
+              ),
+            const Divider(),
+            DropdownButtonFormField<String>(
+              value: tecnicoSeleccionado,
+              decoration: const InputDecoration(
+                labelText: 'Seleccionar Técnico',
+                border: OutlineInputBorder(),
+              ),
+              items: tecnicos.map((t) {
+                final nombreCompleto = '${t['nombre']} ${t['apellido']}';
+                return DropdownMenuItem<String>(
+                  value: t['id_usuario'].toString(),
+                  child: Text(nombreCompleto),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  tecnicoSeleccionado = value;
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: comentarioController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Agregar comentario',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
+        ElevatedButton(
+          onPressed: isSaving
+            ? null
+            : () async {
+                if (tecnicoSeleccionado == null || comentarioController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Seleccione un técnico y escriba un comentario.')),
+                  );
+                  return;
+                }
+                setState(() { isSaving = true; });
+                final ok = await _apiService.addComentarioSolicitud(
+                  widget.ticket.id!,
+                  int.parse(tecnicoSeleccionado!),
+                  comentarioController.text.trim(),
+                );
+                if (ok) {
+                  comentarioController.clear();
+                  tecnicoSeleccionado = null;
+                  comentarios = await _apiService.getComentariosSolicitud(widget.ticket.id!);
+                  setState(() { isSaving = false; });
+                } else {
+                  setState(() { isSaving = false; });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error al guardar el comentario.')),
+                  );
+                }
+              },
+          child: isSaving ? const CircularProgressIndicator() : const Text('Guardar'),
+        ),
+      ],
+    );
+  }
+}
+
 class SupportDashboardScreen extends StatefulWidget {
   const SupportDashboardScreen({super.key});
 
@@ -454,7 +609,13 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                       TextButton(
                         onPressed: () => _showTicketDetails(ticket),
                         child: const Text('Ver Detalles'),
-                      )
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.comment),
+                        onPressed: () => _showCommentsModal(ticket),
+                        color: Colors.orange,
+                        tooltip: 'Ver/Agregar comentarios',
+                      ),
                     ],
                   ),
                 ],
@@ -805,6 +966,12 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                                         color: Colors.green,
                                                         tooltip: 'Cerrar caso',
                                                       ),
+                                                    IconButton(
+                                                      icon: const Icon(Icons.comment),
+                                                      onPressed: () => _showCommentsModal(ticket),
+                                                      color: Colors.orange,
+                                                      tooltip: 'Ver/Agregar comentarios',
+                                                    ),
                                                   ],
                                                 ),
                                               ),
@@ -859,5 +1026,12 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
   Color _textColorSemaforo(Color bg) {
     // Usa blanco para rojo y naranja, negro para verde claro
     return bg == Colors.green ? Colors.black : Colors.white;
+  }
+
+  void _showCommentsModal(Ticket ticket) {
+    showDialog(
+      context: context,
+      builder: (context) => ComentariosModal(ticket: ticket, apiService: _apiService),
+    );
   }
 } 

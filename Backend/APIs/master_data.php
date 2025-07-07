@@ -32,7 +32,7 @@ function getServiceTypes() {
 function getSupportStaff() {
     global $conn;
     try {
-        $stmt = $conn->query("SELECT id_usuario, CONCAT(nombre, ' ', apellido) as nombre_completo FROM tic_usuarios ORDER BY nombre");
+        $stmt = $conn->query("SELECT id_usuario, nombre, apellido, CONCAT(nombre, ' ', apellido) as nombre_completo FROM tic_usuarios ORDER BY nombre");
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         writeLog("Obteniendo personal de soporte: " . count($result) . " registros encontrados", "master_data");
         return $result;
