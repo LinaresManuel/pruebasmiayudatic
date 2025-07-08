@@ -579,7 +579,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                 margin: const EdgeInsets.only(bottom: 2),
                                 child: TextFormField(
                                   controller: _descripcionSolucionController,
-                                  maxLength: 500,
+                                  maxLength: 1000,
                                   decoration: InputDecoration(
                                     labelText: 'Descripción de la Solución',
                                     hintText: 'Explique cómo se resolvió el problema',
@@ -607,9 +607,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Text(
-                                      '${500 - _descripcionSolucionController.text.length} caracteres restantes',
+                                      '${1000 - _descripcionSolucionController.text.length} caracteres restantes',
                                       style: TextStyle(
-                                        color: (500 - _descripcionSolucionController.text.length) < 50 ? Colors.red : Colors.grey.shade700,
+                                        color: (1000 - _descripcionSolucionController.text.length) < 50 ? Colors.red : Colors.grey.shade700,
                                         fontSize: 13,
                                       ),
                                     ),

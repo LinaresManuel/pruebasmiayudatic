@@ -36,8 +36,19 @@ class _ComentariosModalState extends State<ComentariosModal> {
   Future<void> cargarDatos() async {
     try {
       tecnicos = await _apiService.getSupportStaff().timeout(const Duration(seconds: 10));
-      comentarios = await _apiService.getComentariosSolicitud(widget.ticket.id!).timeout(const Duration(seconds: 10));
-      setState(() { isLoading = false; });
+      final nuevosComentarios = await _apiService.getComentariosSolicitud(widget.ticket.id!).timeout(const Duration(seconds: 10));
+      // Ordenar descendente por fecha
+      nuevosComentarios.sort((a, b) {
+        final fechaA = DateTime.tryParse(a['fecha_comentario'] ?? '') ?? DateTime(2000);
+        final fechaB = DateTime.tryParse(b['fecha_comentario'] ?? '') ?? DateTime(2000);
+        return fechaB.compareTo(fechaA);
+      });
+      setState(() {
+        comentarios = nuevosComentarios;
+        isLoading = false;
+      });
+      print('Comentarios cargados:');
+      print(comentarios);
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -66,39 +77,81 @@ class _ComentariosModalState extends State<ComentariosModal> {
       );
     }
     return AlertDialog(
-      title: Text('Comentarios de la Solicitud #${widget.ticket.id}'),
+      backgroundColor: Colors.grey[50],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      title: Row(
+        children: [
+          Icon(Icons.comment, color: Color(0xFF04324D), size: 28),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Comentarios de la Solicitud #${widget.ticket.id}',
+              style: TextStyle(
+                color: Color(0xFF04324D),
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ),
+        ],
+      ),
       content: SizedBox(
         width: 400,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (comentarios.isEmpty)
-              const Text('No hay comentarios aún.'),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Text('No hay comentarios aún.', style: TextStyle(color: Colors.grey)),
+              ),
             if (comentarios.isNotEmpty)
-              SizedBox(
+              Container(
                 height: 150,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey),
+                ),
                 child: ListView.builder(
                   itemCount: comentarios.length,
                   itemBuilder: (context, index) {
                     final c = comentarios[index];
                     return ListTile(
-                      leading: const Icon(Icons.person),
-                      title: Text('${c['nombre_tecnico'] ?? (c['nombre'] ?? '') + ' ' + (c['apellido'] ?? '')}'),
+                      leading: CircleAvatar(
+                        backgroundColor: Color(0xFF39A900),
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      title: Text(
+                        c['nombre_tecnico'] ?? '${c['nombre'] ?? ''} ${c['apellido'] ?? ''}',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D)),
+                      ),
                       subtitle: Text(c['comentario'] ?? ''),
-                      trailing: Text(c['fecha_comentario'] ?? ''),
+                      trailing: Text(
+                        c['fecha_comentario'] != null
+                          ? c['fecha_comentario'].replaceFirst('T', ' ')
+                          : '',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
                     );
                   },
                 ),
               ),
-            const Divider(),
+            const SizedBox(height: 18),
             DropdownButtonFormField<String>(
               value: tecnicoSeleccionado,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Seleccionar Técnico',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Color(0xFF39A900), width: 2),
+                ),
               ),
               items: tecnicos.map((t) {
-                final nombreCompleto = '${t['nombre']} ${t['apellido']}';
+                final nombreCompleto = t['nombre_completo'] ?? '${t['nombre'] ?? ''} ${t['apellido'] ?? ''}';
                 return DropdownMenuItem<String>(
                   value: t['id_usuario'].toString(),
                   child: Text(nombreCompleto),
@@ -110,13 +163,19 @@ class _ComentariosModalState extends State<ComentariosModal> {
                 });
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             TextField(
               controller: comentarioController,
               maxLines: 3,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Agregar comentario',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Color(0xFF39A900), width: 2),
+                ),
+                fillColor: Colors.white,
+                filled: true,
               ),
             ),
           ],
@@ -125,9 +184,13 @@ class _ComentariosModalState extends State<ComentariosModal> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.grey[700],
+            textStyle: TextStyle(fontWeight: FontWeight.bold),
+          ),
           child: const Text('Cerrar'),
         ),
-        ElevatedButton(
+        ElevatedButton.icon(
           onPressed: isSaving
             ? null
             : () async {
@@ -146,7 +209,7 @@ class _ComentariosModalState extends State<ComentariosModal> {
                 if (ok) {
                   comentarioController.clear();
                   tecnicoSeleccionado = null;
-                  comentarios = await _apiService.getComentariosSolicitud(widget.ticket.id!);
+                  await cargarDatos();
                   setState(() { isSaving = false; });
                 } else {
                   setState(() { isSaving = false; });
@@ -155,7 +218,16 @@ class _ComentariosModalState extends State<ComentariosModal> {
                   );
                 }
               },
-          child: isSaving ? const CircularProgressIndicator() : const Text('Guardar'),
+          icon: isSaving
+              ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Icon(Icons.send, color: Colors.white),
+          label: const Text('Guardar', style: TextStyle(color: Colors.white)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color(0xFF39A900),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
       ],
     );
