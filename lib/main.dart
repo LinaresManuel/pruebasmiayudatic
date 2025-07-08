@@ -9,6 +9,7 @@ import 'screens/consultar_ticket_screen.dart';
 import 'screens/estadisticas_personal_screen.dart';
 import 'screens/configuracion_screen.dart';
 import 'screens/estadisticas_dependencias_screen.dart';
+import 'screens/consultar_estado_screen.dart';
 import 'models/user_model.dart';
 import 'package:provider/provider.dart';
 import 'models/user_provider.dart';
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         '/support-dashboard': (context) => const SupportDashboardScreen(),
         '/solicitud-cerrada': (context) => const SolicitudCerradaScreen(),
         '/consultar-ticket': (context) => const ConsultarTicketScreen(),
+        '/consultar-estado': (context) => const ConsultarEstadoScreen(),
         '/estadisticas-personal': (context) => const EstadisticasPersonalScreen(),
         '/estadisticas-dependencias': (context) => const EstadisticasDependenciasScreen(),
         '/case-details': (context) {

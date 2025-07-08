@@ -83,32 +83,64 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        // Botón Reportar Falla
-                        SizedBox(
-                          width: 250,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/ticket-form');
-                            },
-                            icon: const Icon(Icons.report_problem, color: Colors.white),
-                            label: const Text(
-                              'REPORTAR FALLA',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
+                        // Botón Reportar Falla y Consultar Estado
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 180,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/ticket-form');
+                                },
+                                icon: const Icon(Icons.report_problem, color: Colors.white),
+                                label: const Text(
+                                  'REPORTAR FALLA',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF39A900),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 22),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: const BorderSide(color: Colors.black, width: 2),
+                                  ),
+                                  elevation: 2,
+                                ),
                               ),
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF39A900),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 26),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: const BorderSide(color: Colors.black, width: 2),
+                            const SizedBox(width: 16),
+                            SizedBox(
+                              width: 200,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/consultar-estado');
+                                },
+                                icon: const Icon(Icons.search, color: Colors.white),
+                                label: const Text(
+                                  'CONSULTAR TICKET',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF04324D),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 22),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: const BorderSide(color: Colors.black, width: 2),
+                                  ),
+                                  elevation: 2,
+                                ),
                               ),
-                              elevation: 2,
                             ),
-                          ),
+                          ],
                         ),
                         const SizedBox(height: 32),
                         const Divider(height: 1),
