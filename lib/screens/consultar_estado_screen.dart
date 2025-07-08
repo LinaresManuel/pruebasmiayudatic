@@ -307,6 +307,13 @@ class _ConsultarEstadoScreenState extends State<ConsultarEstadoScreen> {
                       Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 16 : 22)),
                       SizedBox(height: isMobile ? 6 : 12),
                       Text(ticket.descripcion, style: TextStyle(fontSize: isMobile ? 15 : 20)),
+                      if (ticket.descripcionSolucion != null && ticket.descripcionSolucion!.trim().isNotEmpty) ...[
+                        SizedBox(height: isMobile ? 18 : 32),
+                        const Divider(),
+                        Text('Solución:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF39A900), fontSize:  isMobile ? 16 : 22)),
+                        SizedBox(height: isMobile ? 6 : 12),
+                        Text(ticket.descripcionSolucion!, style: TextStyle(fontSize: isMobile ? 15 : 20)),
+                      ],
                     ],
                   ),
                 ),
