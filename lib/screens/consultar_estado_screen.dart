@@ -239,157 +239,211 @@ class _ConsultarEstadoScreenState extends State<ConsultarEstadoScreen> {
       child: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: isMobile ? 900 : 1300),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if ((ticket.estado ?? '').toLowerCase() == 'cerrada')
-                Container(
-                  margin: const EdgeInsets.only(bottom: 18),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF39A900).withOpacity(0.18),
-                    border: Border.all(color: const Color(0xFF39A900), width: 2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle, color: Color(0xFF39A900), size: 28),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
-                          'La orden de servicio técnico ya fue cerrada.',
-                          style: TextStyle(
-                            color: Color(0xFF04324D),
-                            fontWeight: FontWeight.bold,
-                            fontSize: isMobile ? 16 : 20,
-                          ),
+          child: isMobile
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if ((ticket.estado ?? '').toLowerCase() == 'cerrada')
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 18),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF39A900).withOpacity(0.18),
+                          border: Border.all(color: const Color(0xFF39A900), width: 2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              Card(
-                elevation: 6,
-                margin: EdgeInsets.symmetric(vertical: isMobile ? 16 : 32, horizontal: isMobile ? 8 : 32),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: EdgeInsets.all(isMobile ? 24.0 : 40.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF39A900),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: EdgeInsets.all(isMobile ? 8 : 16),
-                            child: Icon(Icons.info, color: Colors.white, size: isMobile ? 28 : 40),
-                          ),
-                          SizedBox(width: isMobile ? 16 : 32),
-                          Text('Ticket #${ticket.id}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 22 : 32, color: Color(0xFF04324D))),
-                        ],
-                      ),
-                      SizedBox(height: isMobile ? 18 : 32),
-                      _infoRow('Fecha', DateFormat('dd/MM/yyyy').format(ticket.fechaReporte), isDesktop: !isMobile),
-                      _infoRow('Solicitante', '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}', isDesktop: !isMobile),
-                      _infoRow('Dependencia', ticket.dependencia, isDesktop: !isMobile),
-                      _infoRow('Estado', ticket.estado ?? 'No asignado', color: _getStatusColor(ticket.estado), isDesktop: !isMobile),
-                      _infoRow('Tipo de Servicio', ticket.tipoServicio ?? 'No asignado', isDesktop: !isMobile),
-                      _infoRow('Personal Asignado', ticket.personalAsignado ?? 'No asignado', isDesktop: !isMobile),
-                      if (ticket.fechaCreacion != null)
-                        _infoRow('Fecha de Creación', DateFormat('dd/MM/yyyy HH:mm').format(ticket.fechaCreacion!), isDesktop: !isMobile),
-                      if (ticket.fechaCierre != null)
-                        _infoRow('Fecha de Cierre', DateFormat('dd/MM/yyyy HH:mm').format(ticket.fechaCierre!), isDesktop: !isMobile),
-                      SizedBox(height: isMobile ? 18 : 32),
-                      const Divider(),
-                      Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 16 : 22)),
-                      SizedBox(height: isMobile ? 6 : 12),
-                      Text(ticket.descripcion, style: TextStyle(fontSize: isMobile ? 15 : 20)),
-                      if (ticket.descripcionSolucion != null && ticket.descripcionSolucion!.trim().isNotEmpty) ...[
-                        SizedBox(height: isMobile ? 18 : 32),
-                        const Divider(),
-                        Text('Solución:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF39A900), fontSize:  isMobile ? 16 : 22)),
-                        SizedBox(height: isMobile ? 6 : 12),
-                        Text(ticket.descripcionSolucion!, style: TextStyle(fontSize: isMobile ? 15 : 20)),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              Card(
-                elevation: 4,
-                margin: EdgeInsets.symmetric(vertical: isMobile ? 8 : 20, horizontal: isMobile ? 8 : 32),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: EdgeInsets.all(isMobile ? 20.0 : 32.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF04324D),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            padding: EdgeInsets.all(isMobile ? 8 : 16),
-                            child: Icon(Icons.comment, color: Colors.white, size: isMobile ? 24 : 32),
-                          ),
-                          SizedBox(width: isMobile ? 12 : 24),
-                          Text('Comentarios', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 18 : 24)),
-                        ],
-                      ),
-                      SizedBox(height: isMobile ? 12 : 20),
-                      if (comentarios.isEmpty)
-                        Text('No hay comentarios para esta solicitud.', style: TextStyle(color: Colors.grey, fontSize: isMobile ? 15 : 18)),
-                      if (comentarios.isNotEmpty)
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: comentarios.length,
-                          separatorBuilder: (context, idx) => const Divider(height: 18),
-                          itemBuilder: (context, index) {
-                            final c = comentarios[index];
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.person, color: Color(0xFF39A900), size: isMobile ? 24 : 32),
-                                SizedBox(width: isMobile ? 10 : 18),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            c['nombre_tecnico'] ?? '${c['nombre'] ?? ''} ${c['apellido'] ?? ''}',
-                                            style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 15 : 18),
-                                          ),
-                                          SizedBox(width: isMobile ? 8 : 16),
-                                          if (c['fecha_comentario'] != null)
-                                            Text(
-                                              c['fecha_comentario'].replaceFirst('T', ' '),
-                                              style: TextStyle(fontSize: isMobile ? 12 : 15, color: Colors.grey),
-                                            ),
-                                        ],
-                                      ),
-                                      SizedBox(height: isMobile ? 2 : 8),
-                                      Text(c['comentario'] ?? '', style: TextStyle(fontSize: isMobile ? 15 : 18)),
-                                    ],
-                                  ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Color(0xFF39A900), size: 28),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                'La orden de servicio técnico ya fue cerrada.',
+                                style: TextStyle(
+                                  color: Color(0xFF04324D),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: isMobile ? 16 : 20,
                                 ),
-                              ],
-                            );
-                          },
+                              ),
+                            ),
+                          ],
                         ),
-                    ],
-                  ),
+                      ),
+                    _buildInfoCard(ticket, isMobile),
+                    _buildCommentsCard(comentarios, isMobile),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if ((ticket.estado ?? '').toLowerCase() == 'cerrada')
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 18),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF39A900).withOpacity(0.18),
+                                border: Border.all(color: const Color(0xFF39A900), width: 2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.check_circle, color: Color(0xFF39A900), size: 28),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Text(
+                                      'La orden de servicio técnico ya fue cerrada.',
+                                      style: TextStyle(
+                                        color: Color(0xFF04324D),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          _buildInfoCard(ticket, false),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 32),
+                    Expanded(
+                      flex: 2,
+                      child: _buildCommentsCard(comentarios, false),
+                    ),
+                  ],
                 ),
-              ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(Ticket ticket, bool isMobile) {
+    return Card(
+      elevation: 6,
+      margin: EdgeInsets.symmetric(vertical: isMobile ? 16 : 32, horizontal: isMobile ? 8 : 0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(isMobile ? 24.0 : 40.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF39A900),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.all(isMobile ? 8 : 16),
+                  child: Icon(Icons.info, color: Colors.white, size: isMobile ? 28 : 40),
+                ),
+                SizedBox(width: isMobile ? 16 : 32),
+                Text('Ticket #${ticket.id}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: isMobile ? 22 : 32, color: Color(0xFF04324D))),
+              ],
+            ),
+            SizedBox(height: isMobile ? 18 : 32),
+            _infoRow('Fecha', DateFormat('dd/MM/yyyy').format(ticket.fechaReporte), isDesktop: !isMobile),
+            _infoRow('Solicitante', '${ticket.nombresSolicitante} ${ticket.apellidosSolicitante}', isDesktop: !isMobile),
+            _infoRow('Dependencia', ticket.dependencia, isDesktop: !isMobile),
+            _infoRow('Estado', ticket.estado ?? 'No asignado', color: _getStatusColor(ticket.estado), isDesktop: !isMobile),
+            _infoRow('Tipo de Servicio', ticket.tipoServicio ?? 'No asignado', isDesktop: !isMobile),
+            _infoRow('Personal Asignado', ticket.personalAsignado ?? 'No asignado', isDesktop: !isMobile),
+            if (ticket.fechaCreacion != null)
+              _infoRow('Fecha de Creación', DateFormat('dd/MM/yyyy HH:mm').format(ticket.fechaCreacion!), isDesktop: !isMobile),
+            if (ticket.fechaCierre != null)
+              _infoRow('Fecha de Cierre', DateFormat('dd/MM/yyyy HH:mm').format(ticket.fechaCierre!), isDesktop: !isMobile),
+            SizedBox(height: isMobile ? 18 : 32),
+            const Divider(),
+            Text('Descripción:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 16 : 22)),
+            SizedBox(height: isMobile ? 6 : 12),
+            Text(ticket.descripcion, style: TextStyle(fontSize: isMobile ? 15 : 20)),
+            if (ticket.descripcionSolucion != null && ticket.descripcionSolucion!.trim().isNotEmpty) ...[
+              SizedBox(height: isMobile ? 18 : 32),
+              const Divider(),
+              Text('Solución:', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF39A900), fontSize:  isMobile ? 16 : 22)),
+              SizedBox(height: isMobile ? 6 : 12),
+              Text(ticket.descripcionSolucion!, style: TextStyle(fontSize: isMobile ? 15 : 20)),
             ],
-          ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCommentsCard(List<Map<String, dynamic>> comentarios, bool isMobile) {
+    return Card(
+      elevation: 4,
+      margin: EdgeInsets.symmetric(vertical: isMobile ? 8 : 20, horizontal: isMobile ? 8 : 0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(isMobile ? 20.0 : 32.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF04324D),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.all(isMobile ? 8 : 16),
+                  child: Icon(Icons.comment, color: Colors.white, size: isMobile ? 24 : 32),
+                ),
+                SizedBox(width: isMobile ? 12 : 24),
+                Text('Comentarios', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 18 : 24)),
+              ],
+            ),
+            SizedBox(height: isMobile ? 12 : 20),
+            if (comentarios.isEmpty)
+              Text('No hay comentarios para esta solicitud.', style: TextStyle(color: Colors.grey, fontSize: isMobile ? 15 : 18)),
+            if (comentarios.isNotEmpty)
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: comentarios.length,
+                separatorBuilder: (context, idx) => const Divider(height: 18),
+                itemBuilder: (context, index) {
+                  final c = comentarios[index];
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.person, color: Color(0xFF39A900), size: isMobile ? 24 : 32),
+                      SizedBox(width: isMobile ? 10 : 18),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  c['nombre_tecnico'] ?? '${c['nombre'] ?? ''} ${c['apellido'] ?? ''}',
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 15 : 18),
+                                ),
+                                SizedBox(width: isMobile ? 8 : 16),
+                                if (c['fecha_comentario'] != null)
+                                  Text(
+                                    c['fecha_comentario'].replaceFirst('T', ' '),
+                                    style: TextStyle(fontSize: isMobile ? 12 : 15, color: Colors.grey),
+                                  ),
+                              ],
+                            ),
+                            SizedBox(height: isMobile ? 2 : 8),
+                            Text(c['comentario'] ?? '', style: TextStyle(fontSize: isMobile ? 15 : 18)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+          ],
         ),
       ),
     );
