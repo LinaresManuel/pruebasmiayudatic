@@ -99,6 +99,44 @@ class _TicketFormScreenState extends State<TicketFormScreen> {
             idSolicitud: ticketResponse['id_solicitud'].toString(),
             descripcion: ticketResponse['descripcion'],
           );
+          // Mostrar modal con el número de ticket y mensaje de confirmación
+          if (mounted) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: Column(
+                    children: [
+                      Icon(Icons.check_circle, color: Color(0xFF39A900), size: 48),
+                      SizedBox(height: 12),
+                      Text('¡Reporte enviado!', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Tu número de ticket es:', style: TextStyle(fontSize: 16)),
+                      SizedBox(height: 8),
+                      Text(
+                        ticketResponse['id_solicitud'].toString(),
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF04324D)),
+                      ),
+                      SizedBox(height: 18),
+                      Text(
+                        'Te hemos enviado un correo con la información del reporte de la falla. Por favor, revisa tu bandeja de entrada o la carpeta de correo no deseado Mi Ayuda Tic.',
+                        style: TextStyle(fontSize: 15),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+            await Future.delayed(const Duration(seconds: 8));
+            if (mounted) Navigator.of(context, rootNavigator: true).pop();
+          }
         }
 
         if (!mounted) return;
