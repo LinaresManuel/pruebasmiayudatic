@@ -13,6 +13,7 @@ class ConsultarEstadoScreen extends StatefulWidget {
 
 class _ConsultarEstadoScreenState extends State<ConsultarEstadoScreen> {
   final TextEditingController _ticketIdController = TextEditingController();
+  final FocusNode _ticketIdFocusNode = FocusNode();
   final ApiService _apiService = ApiService();
   Ticket? _ticket;
   List<Map<String, dynamic>> _comentarios = [];
@@ -25,6 +26,10 @@ class _ConsultarEstadoScreenState extends State<ConsultarEstadoScreen> {
   void initState() {
     super.initState();
     _startTime = DateTime.now();
+    // Solicitar foco automáticamente al abrir la pantalla
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ticketIdFocusNode.requestFocus();
+    });
     Future.delayed(const Duration(seconds: 90), () {
       if (mounted) {
         Navigator.of(context).popUntil((route) => route.isFirst);
@@ -184,6 +189,7 @@ class _ConsultarEstadoScreenState extends State<ConsultarEstadoScreen> {
               ),
               child: TextField(
                 controller: _ticketIdController,
+                focusNode: _ticketIdFocusNode,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 maxLength: 4,
@@ -383,67 +389,76 @@ class _ConsultarEstadoScreenState extends State<ConsultarEstadoScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: EdgeInsets.all(isMobile ? 20.0 : 32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF04324D),
-                    borderRadius: BorderRadius.circular(8),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF04324D),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.all(isMobile ? 8 : 16),
+                    child: Icon(Icons.comment, color: Colors.white, size: isMobile ? 24 : 32),
                   ),
-                  padding: EdgeInsets.all(isMobile ? 8 : 16),
-                  child: Icon(Icons.comment, color: Colors.white, size: isMobile ? 24 : 32),
-                ),
-                SizedBox(width: isMobile ? 12 : 24),
-                Text('Comentarios', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 18 : 24)),
-              ],
-            ),
-            SizedBox(height: isMobile ? 12 : 20),
-            if (comentarios.isEmpty)
-              Text('No hay comentarios para esta solicitud.', style: TextStyle(color: Colors.grey, fontSize: isMobile ? 15 : 18)),
-            if (comentarios.isNotEmpty)
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: comentarios.length,
-                separatorBuilder: (context, idx) => const Divider(height: 18),
-                itemBuilder: (context, index) {
-                  final c = comentarios[index];
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.person, color: Color(0xFF39A900), size: isMobile ? 24 : 32),
-                      SizedBox(width: isMobile ? 10 : 18),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  c['nombre_tecnico'] ?? '${c['nombre'] ?? ''} ${c['apellido'] ?? ''}',
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 15 : 18),
-                                ),
-                                SizedBox(width: isMobile ? 8 : 16),
-                                if (c['fecha_comentario'] != null)
-                                  Text(
-                                    c['fecha_comentario'].replaceFirst('T', ' '),
-                                    style: TextStyle(fontSize: isMobile ? 12 : 15, color: Colors.grey),
-                                  ),
-                              ],
-                            ),
-                            SizedBox(height: isMobile ? 2 : 8),
-                            Text(c['comentario'] ?? '', style: TextStyle(fontSize: isMobile ? 15 : 18)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                  SizedBox(width: isMobile ? 12 : 24),
+                  Text('Comentarios', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 18 : 24)),
+                ],
               ),
-          ],
+              SizedBox(height: isMobile ? 12 : 20),
+              if (comentarios.isEmpty)
+                Text('No hay comentarios para esta solicitud.', style: TextStyle(color: Colors.grey, fontSize: isMobile ? 15 : 18)),
+              if (comentarios.isNotEmpty)
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: comentarios.length,
+                  separatorBuilder: (context, idx) => const Divider(height: 18),
+                  itemBuilder: (context, index) {
+                    final c = comentarios[index];
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.person, color: Color(0xFF39A900), size: isMobile ? 24 : 32),
+                        SizedBox(width: isMobile ? 10 : 18),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      c['nombre_tecnico'] ?? '${c['nombre'] ?? ''} ${c['apellido'] ?? ''}',
+                                      style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isMobile ? 15 : 18),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  SizedBox(width: isMobile ? 8 : 16),
+                                  if (c['fecha_comentario'] != null)
+                                    Flexible(
+                                      child: Text(
+                                        c['fecha_comentario'].replaceFirst('T', ' '),
+                                        style: TextStyle(fontSize: isMobile ? 12 : 15, color: Colors.grey),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              SizedBox(height: isMobile ? 2 : 8),
+                              Text(c['comentario'] ?? '', style: TextStyle(fontSize: isMobile ? 15 : 18)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -453,19 +468,34 @@ class _ConsultarEstadoScreenState extends State<ConsultarEstadoScreen> {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: isDesktop ? 8 : 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('$label: ', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF04324D), fontSize: isDesktop ? 18 : 15)),
           if (color != null)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: isDesktop ? 12 : 8, vertical: isDesktop ? 6 : 2),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(8),
+            Flexible(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 12 : 8, vertical: isDesktop ? 6 : 2),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  value,
+                  style: TextStyle(color: Colors.white, fontSize: isDesktop ? 16 : 14),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
               ),
-              child: Text(value, style: TextStyle(color: Colors.white, fontSize: isDesktop ? 16 : 14)),
             )
           else
-            Text(value, style: TextStyle(color: Colors.black87, fontSize: isDesktop ? 16 : 14)),
+            Flexible(
+              child: Text(
+                value,
+                style: TextStyle(color: Colors.black87, fontSize: isDesktop ? 16 : 14),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
         ],
       ),
     );

@@ -682,11 +682,34 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                         onPressed: () => _showTicketDetails(ticket),
                         child: const Text('Ver Detalles'),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.comment),
-                        onPressed: () => _showCommentsModal(ticket),
-                        color: Colors.orange,
-                        tooltip: 'Ver/Agregar comentarios',
+                      FutureBuilder<bool>(
+                        future: _ticketHasComments(ticket.id!),
+                        builder: (context, snapshot) {
+                          final hasComments = snapshot.data ?? false;
+                          return Stack(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.comment),
+                                onPressed: () => _showCommentsModal(ticket),
+                                color: Colors.orange,
+                                tooltip: 'Ver/Agregar comentarios',
+                              ),
+                              if (hasComments)
+                                Positioned(
+                                  right: 6,
+                                  top: 6,
+                                  child: Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -1038,11 +1061,34 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
                                                         color: Colors.green,
                                                         tooltip: 'Cerrar caso',
                                                       ),
-                                                    IconButton(
-                                                      icon: const Icon(Icons.comment),
-                                                      onPressed: () => _showCommentsModal(ticket),
-                                                      color: Colors.orange,
-                                                      tooltip: 'Ver/Agregar comentarios',
+                                                    FutureBuilder<bool>(
+                                                      future: _ticketHasComments(ticket.id!),
+                                                      builder: (context, snapshot) {
+                                                        final hasComments = snapshot.data ?? false;
+                                                        return Stack(
+                                                          children: [
+                                                            IconButton(
+                                                              icon: const Icon(Icons.comment),
+                                                              onPressed: () => _showCommentsModal(ticket),
+                                                              color: Colors.orange,
+                                                              tooltip: 'Ver/Agregar comentarios',
+                                                            ),
+                                                            if (hasComments)
+                                                              Positioned(
+                                                                right: 6,
+                                                                top: 6,
+                                                                child: Container(
+                                                                  width: 10,
+                                                                  height: 10,
+                                                                  decoration: BoxDecoration(
+                                                                    color: Colors.red,
+                                                                    shape: BoxShape.circle,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        );
+                                                      },
                                                     ),
                                                   ],
                                                 ),
@@ -1105,5 +1151,15 @@ class _SupportDashboardScreenState extends State<SupportDashboardScreen> {
       context: context,
       builder: (context) => ComentariosModal(ticket: ticket, apiService: _apiService),
     );
+  }
+
+  // Verifica si un ticket tiene comentarios
+  Future<bool> _ticketHasComments(int ticketId) async {
+    try {
+      final comentarios = await _apiService.getComentariosSolicitud(ticketId);
+      return comentarios.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
   }
 } 
